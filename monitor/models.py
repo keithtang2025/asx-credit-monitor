@@ -175,6 +175,51 @@ def status_v5(flag_dd: str, flag_z: str, flag_cov: str, flag_mkt: str,
     return "GREEN", n_red
 
 
+def rag_high(value, red_above, amber_above) -> str:
+    """RAG for metrics where HIGHER is worse (e.g. gearing)."""
+    if value is None or pd.isna(value):
+        return "N/A"
+    if value > red_above:
+        return "RED"
+    if value > amber_above:
+        return "AMBER"
+    return "GREEN"
+
+
+def status_v8(flag_dd: str, flag_z: str, flag_credit: str, flag_mkt: str,
+              flag_trend: str = "GREEN", shared_cause: bool = False,
+              red_needed: int = 2) -> tuple[str, int]:
+    """v8 status rule.
+
+    flag_credit is the business-model credit metric (interest cover, cash
+    runway or gearing): a RED there is a hard signal and gives AMBER alone.
+    Altman Z'' is a supporting signal: a RED Z'' alone gives WATCH, but it
+    still counts as a red towards RED and as a warning towards AMBER.
+    Returns (status, number of independent red signals).
+    """
+    z_red = flag_z == "RED"
+    credit_red = flag_credit == "RED"
+    acct_red = z_red + credit_red
+    if shared_cause and acct_red > 1:
+        acct_red = 1          # one impairment hitting two ratios is one signal
+    n_red = acct_red + (flag_dd == "RED")
+    warnings = (z_red + (flag_z == "AMBER") + (flag_credit == "AMBER")
+                + (flag_trend == "AMBER"))
+    mkt = flag_mkt == "AMBER"
+
+    if flag_dd == "RED" or n_red >= red_needed:
+        return "RED", n_red
+    if (flag_dd == "AMBER" or credit_red or warnings >= 2
+            or (mkt and (warnings + credit_red) >= 1)):
+        return "AMBER", n_red
+    if warnings == 1 or mkt:
+        return "WATCH", n_red
+    flags = [f for f in (flag_dd, flag_z, flag_credit) if f not in ("OFF", "N/A")]
+    if not flags:
+        return "N/A", n_red
+    return "GREEN", n_red
+
+
 def status_v3(flag_dd, flag_z, flag_cov, flag_mkt, shared_cause=False, red_needed=2):
     """v3 rule (no trend signal). Kept for comparison and tests."""
     return status_v5(flag_dd, flag_z, flag_cov, flag_mkt, "GREEN", shared_cause, red_needed)

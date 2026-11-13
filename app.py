@@ -56,7 +56,8 @@ COLORS = {"RED": "background-color:#f8d7da", "AMBER": "background-color:#fff3cd"
           "WATCH": "background-color:#e2e3f3",
           "GREEN": "background-color:#d1e7dd"}
 cols = ["ticker", "name", "sector", "status", "reasons", "source_check", "data_issues",
-        "distance_to_default", "pd_1y", "altman_z2", "ebitda_coverage", "coverage_basis",
+        "distance_to_default", "pd_1y", "altman_z2", "credit_metric", "credit_metric_value",
+        "gearing", "cash_runway_months", "ebitda_coverage", "coverage_basis",
         "ebitda_cover_latest", "ebitda_cover_3y", "earnings_vs_3y", "ebitda_m",
         "ebitda_3y_m", "ebitda_source", "ebit_coverage",
         "net_debt_ebitda", "drawdown_52w", "market_cap_bn", "default_point_bn",
@@ -65,6 +66,7 @@ st.dataframe(
     view[[c for c in cols if c in view.columns]].style.map(lambda v: COLORS.get(v, ""), subset=["status"]).format({
         "distance_to_default": "{:.2f}", "pd_1y": "{:.2%}", "altman_z2": "{:.2f}",
         "ebitda_coverage": "{:.1f}x", "ebit_coverage": "{:.1f}x",
+        "gearing": "{:.0%}", "cash_runway_months": "{:.0f}", "credit_metric_value": "{:.2f}",
         "ebitda_cover_latest": "{:.1f}x", "ebitda_cover_3y": "{:.1f}x",
         "earnings_vs_3y": "{:.0%}", "ebitda_m": "{:,.0f}", "ebitda_3y_m": "{:,.0f}", "net_debt_ebitda": "{:.1f}x",
         "drawdown_52w": "{:.0%}", "market_cap_bn": "{:.1f}", "default_point_bn": "{:.1f}"},

@@ -1,4 +1,4 @@
-"""Runs the models over a company record and the full watchlist (v6 scoring)."""
+"""Runs the models over a company record and the full watchlist (v8 scoring)."""
 from __future__ import annotations
 
 from datetime import date
@@ -8,7 +8,7 @@ import pandas as pd
 
 from . import config as C
 from .models import (altman_z2, coverage, default_point, merton_kmv,
-                     net_debt_to_ebitda, rag, status_v5)
+                     net_debt_to_ebitda, rag, rag_high, status_v8)
 
 
 def _nan(x) -> bool:
@@ -21,6 +21,17 @@ def z_applies(rec: dict) -> bool:
         return False
     text = f"{rec.get('industry', '')} {rec.get('sector', '')}".lower()
     return not any(k in text for k in C.Z_EXCLUDE_KEYWORDS)
+
+
+def gearing_thresholds(rec: dict):
+    """(red_above, amber_above) if this business is judged on gearing, else None."""
+    if rec["ticker"] in C.GEARING_TICKER_OVERRIDES:
+        return C.GEARING_TICKER_OVERRIDES[rec["ticker"]]
+    text = f"{rec.get('industry', '')} {rec.get('sector', '')}".lower()
+    for keywords, thr in C.GEARING_BY_SECTOR:
+        if any(k in text for k in keywords):
+            return thr
+    return None
 
 
 def coverage_thresholds(rec: dict) -> tuple[float, float]:
@@ -65,7 +76,11 @@ def score_company(rec: dict) -> dict:
 
     m = merton_kmv(mcap, dp, C.RISK_FREE_RATE, C.HORIZON)
 
-    z_on = z_applies(rec)
+    # Net cash: more cash than debt (v6). v8: Z'' is also switched off for
+    # these, since accumulated start-up losses say nothing about default risk.
+    net_cash = (not _nan(rec.get("cash")) and not _nan(rec.get("total_debt"))
+                and rec["cash"] >= rec["total_debt"])
+    z_on = z_applies(rec) and not net_cash
     z = altman_z2(rec["working_capital"], rec["retained_earnings"], rec["ebit"],
                   rec["book_equity"], rec["total_assets"], rec["total_liabilities"])
     cov_latest = coverage(rec["ebitda"], rec["interest_expense"])
@@ -106,11 +121,31 @@ def score_company(rec: dict) -> dict:
     f_dd = rag(m["distance_to_default"], *C.THRESHOLDS["distance_to_default"])
     f_z = rag(z, *C.THRESHOLDS["altman_z2"]) if z_on else "OFF"
     cov_thr = coverage_thresholds(rec)
-    # v6: with more cash than debt, interest cover is not a credit signal
-    # (tiny interest costs turn small EBITDA swings into extreme ratios).
-    net_cash = (not _nan(rec.get("cash")) and not _nan(rec.get("total_debt"))
-                and rec["cash"] >= rec["total_debt"])
-    f_cov = "OFF" if net_cash else rag(ebitda_cov, *cov_thr)
+
+    # v8: one credit metric per business model
+    gear_thr = gearing_thresholds(rec)
+    loss_making = (not _nan(rec["ebitda"]) and rec["ebitda"] <= 0
+                   and not (cyclical and not _nan(cov_3y) and ebitda_3y > 0))
+    gearing = (rec["total_debt"] / rec["total_assets"]
+               if not _nan(rec.get("total_debt")) and not _nan(rec.get("total_assets"))
+               and rec["total_assets"] > 0 else np.nan)
+    runway = np.nan
+    if gear_thr:
+        credit_metric, credit_value = "gearing", gearing
+        f_cov = rag_high(gearing, *gear_thr)
+    elif loss_making:
+        burn = -rec["ebitda"] + (abs(rec["interest_expense"])
+                                 if not _nan(rec.get("interest_expense")) else 0.0)
+        if not _nan(rec.get("cash")) and burn > 0:
+            runway = 12 * rec["cash"] / burn
+        credit_metric, credit_value = "cash runway", runway
+        f_cov = rag(runway, *C.RUNWAY_MONTHS)
+    elif net_cash:
+        # tiny interest costs make cover meaningless (v6)
+        credit_metric, credit_value, f_cov = "net cash", np.nan, "OFF"
+    else:
+        credit_metric, credit_value = "interest cover", ebitda_cov
+        f_cov = rag(ebitda_cov, *cov_thr)
     f_mkt = "AMBER" if drawdown >= C.DRAWDOWN_ALERT else "GREEN"
 
     # v4: the shared-cause merge only applies when the ratios could NOT be
@@ -118,7 +153,7 @@ def score_company(rec: dict) -> dict:
     # weakness is underlying and the two signals are independent.
     normalised = rec.get("normalised", False)
     shared_cause = one_off and not normalised
-    status, n_red = status_v5(f_dd, f_z, f_cov, f_mkt, f_trend,
+    status, n_red = status_v8(f_dd, f_z, f_cov, f_mkt, f_trend,
                               shared_cause=shared_cause,
                               red_needed=C.RED_SIGNALS_NEEDED)
 
@@ -128,7 +163,12 @@ def score_company(rec: dict) -> dict:
     if f_z in ("RED", "AMBER"):
         reasons.append(f"Z'' {z:.2f} ({f_z})")
     if f_cov in ("RED", "AMBER"):
-        reasons.append(f"EBITDA cover {ebitda_cov:.1f}x {cov_basis} ({f_cov})")
+        if credit_metric == "gearing":
+            reasons.append(f"gearing {gearing:.0%} ({f_cov})")
+        elif credit_metric == "cash runway":
+            reasons.append(f"loss-making: cash runway {runway:.0f} months ({f_cov})")
+        else:
+            reasons.append(f"EBITDA cover {ebitda_cov:.1f}x {cov_basis} ({f_cov})")
     if f_trend == "AMBER":
         if rec["ebitda"] <= 0:
             reasons.append("earnings falling: EBITDA turned negative (3y avg positive)")
@@ -154,6 +194,12 @@ def score_company(rec: dict) -> dict:
         "reasons": "; ".join(reasons),
         "data_issues": "; ".join(dq),
         "distance_to_default": m["distance_to_default"],
+        "dd_display": ("no debt" if np.isinf(m["distance_to_default"])
+                       else f"{m['distance_to_default']:.2f}"),
+        "credit_metric": credit_metric,
+        "credit_metric_value": credit_value,
+        "gearing": gearing,
+        "cash_runway_months": runway,
         "pd_1y": m["pd_1y"],
         "altman_z2": z if z_on else np.nan,
         "z_applies": z_on,

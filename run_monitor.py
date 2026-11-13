@@ -67,12 +67,13 @@ def main():
     watch = df[df["status"] == "WATCH"]
     if len(alerts):
         print("\n=== Alerts ===")
-        print(alerts[["ticker", "name", "status", "distance_to_default", "pd_1y",
-                      "reasons"]].to_string(index=False, float_format="%.3f"))
+        print(alerts[["ticker", "name", "status", "dd_display", "pd_1y",
+                      "reasons"]].rename(columns={"dd_display": "DD"})
+              .to_string(index=False, float_format="%.3f"))
     if len(watch):
         print("\n=== Watch list (single soft signal) ===")
-        print(watch[["ticker", "name", "distance_to_default", "reasons"]]
-              .to_string(index=False, float_format="%.2f"))
+        print(watch[["ticker", "name", "dd_display", "reasons"]]
+              .rename(columns={"dd_display": "DD"}).to_string(index=False))
     dq = df[df["data_issues"].astype(str).str.len() > 0]
     if len(dq):
         print("\n=== Data quality checks (verify against annual reports) ===")

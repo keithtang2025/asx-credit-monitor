@@ -83,6 +83,28 @@ RED_SIGNALS_NEEDED = 2
 # interest cover count as ONE signal, because they share the same cause.
 ONE_OFF_SHARE = 0.25
 
+# --- v8: the right credit metric for each business model ---
+# Property and long-life infrastructure are judged on GEARING (debt / total
+# assets), as lenders do: their earnings run through revaluations,
+# development profits and equity-accounted stakes that EBITDA misses.
+# Thresholds are (red_above, amber_above).
+GEARING_BY_SECTOR = [
+    (["reit", "real estate"], (0.45, 0.35)),
+]
+GEARING_TICKER_OVERRIDES = {
+    # toll roads, ports, airports: structurally higher gearing
+    "TCL.AX": (0.65, 0.55), "ALX.AX": (0.65, 0.55),
+    "DBI.AX": (0.65, 0.55), "AIA.AX": (0.65, 0.55),
+}
+
+# Loss-making companies (EBITDA <= 0) are judged on CASH RUNWAY:
+# cash / (annual cash burn + interest), in months. (red_below, amber_below)
+RUNWAY_MONTHS = (12, 24)
+
+# Altman Z'' red on its own only gives WATCH; it needs a second signal to
+# raise an AMBER. It is switched off entirely for net-cash companies.
+Z_ALONE_STATUS = "WATCH"
+
 # --- v6: data sources ---
 # Second source (FMP) for cross-checking. Off: the monitor runs on Yahoo only.
 # Set True and add an FMP_API_KEY secret to switch it back on.

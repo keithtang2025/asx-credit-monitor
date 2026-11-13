@@ -61,7 +61,7 @@ v6 runs on Yahoo Finance only. The FMP cross-check code is kept in
 `config.py`). To switch it back on, set it to True and add an `FMP_API_KEY`
 repository secret plus an `env:` line in the workflow's "Run monitor" step.
 
-## How it works (v6 scoring)
+## How it works (v8 scoring)
 
 | Signal | Method | RED | AMBER |
 |---|---|---|---|
@@ -75,12 +75,31 @@ Interest cover thresholds (red / amber): default 2.0x / 4.0x; REITs and
 property 1.75x / 2.75x; infrastructure, toll roads, pipelines and
 utilities 1.5x / 2.5x.
 
+**Credit metric by business model (v8).** Each company gets one hard credit
+metric, chosen by how it makes and pays its money:
+
+| Business | Metric | RED | AMBER |
+|---|---|---|---|
+| Profitable operating companies | Interest cover (EBITDA / interest) | sector line | sector line |
+| Loss-making (EBITDA at or below zero) | Cash runway: cash / (cash burn + interest) | under 12 months | under 24 months |
+| REITs and property | Gearing: debt / total assets | over 45% | over 35% |
+| Toll roads, ports, airports | Gearing | over 65% | over 55% |
+| Net cash, profitable | Off (no meaningful default risk from debt) | | |
+
+Runway uses EBITDA as the burn rate, so it ignores capex and is optimistic
+for developers that are still building.
+
 **Status rule**
 
 - **RED**: distance to default below 2.0, or two independent signals red
-- **AMBER**: distance to default amber, or one accounting signal red, or two
-  accounting signals amber, or a drawdown together with any accounting warning
-- **WATCH**: a single accounting signal amber, or a drawdown on its own
+- **AMBER**: distance to default amber, or the credit metric red, or two
+  warnings together, or a drawdown together with any accounting warning
+- **WATCH**: a single warning (including a red Altman Z'' on its own), or a
+  drawdown on its own
+
+Altman Z'' is a supporting signal: on its own it only gives WATCH, because
+buybacks, demergers and old write-downs leave many healthy companies with
+negative retained earnings. It is switched off for net-cash companies.
 - **GREEN**: everything else
 
 **How EBITDA is built.** EBITDA is operating income plus depreciation and
@@ -133,6 +152,11 @@ from the watchlist (QUB, taken private in 2026).
   the Treasury Wine false RED), no double counting of below-the-line
   one-offs, interest cover off for net-cash companies, clearer wording for
   negative earnings.
+- v7: universe extended to ~260 ASX 300 non-financials; backtest added.
+- v8: first full-universe run flagged a quarter of the market. Fixed by
+  matching the credit metric to the business model (cash runway for
+  loss-makers, gearing for property and infrastructure), making Z'' a
+  supporting signal, and switching Z'' off for net-cash companies.
 
 Thresholds live in `monitor/config.py`. Treat them as a starting risk
 appetite and recalibrate after backtesting.

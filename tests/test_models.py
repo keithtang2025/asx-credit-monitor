@@ -4,7 +4,7 @@ import pandas as pd
 from scipy.stats import norm
 
 from monitor.engine import coverage_thresholds, run_watchlist, score_company, z_applies
-from monitor.models import _bs_equity, altman_z2, merton_kmv, rag, status_v2, status_v3, status_v5
+from monitor.models import _bs_equity, altman_z2, merton_kmv, rag, status_v2, status_v3, status_v5, status_v8
 
 
 def simulate_equity(V0, D, sigma_v, r=0.04, T=1.0, n=252, seed=0):
@@ -385,7 +385,9 @@ def test_v6_net_cash_switches_cover_off():
         da=[20 * M] * 4, interest=[8 * M] * 4, ebitda_yahoo=[np.nan] * 4,
         cash=900 * M, debt=50 * M)
     out = score_company(rec)
-    assert out["net_cash"] and out["flag_cov"] == "OFF"
+    # v8: negative operating EBITDA -> judged on cash runway (900m cash vs ~48m burn)
+    assert out["net_cash"] and out["credit_metric"] == "cash runway"
+    assert out["flag_cov"] == "GREEN"
     assert "EBITDA cover" not in out["reasons"]
 
 
@@ -436,3 +438,79 @@ def test_cdi_share_count_reconciled_to_market_cap():
     assert abs(shares - 1.47e9) < 1e6 and "CDI" in note
     shares, note = reconcile_shares(1.0e9, 10.0, 10.2e9)   # within 20%: unchanged
     assert shares == 1.0e9 and note is None
+
+
+
+# ---- v8: right metric per business model; Z'' needs support ----
+
+def _base(**over):
+    E, _ = simulate_equity(100, 10, 0.20, seed=31)
+    rec = {"ticker": "BAS.AX", "name": "Base", "sector": "Industrials", "industry": "",
+           "prices": E, "market_cap_series": E * 1e8,
+           "short_term_debt": 100 * M, "long_term_debt": 900 * M, "total_debt": 1000 * M,
+           "cash": 100 * M, "total_assets": 5000 * M, "total_liabilities": 3000 * M,
+           "working_capital": 50 * M, "retained_earnings": 500 * M, "book_equity": 2000 * M,
+           "ebit": 400 * M, "ebitda": 600 * M, "interest_expense": 60 * M,
+           "statement_date": "2026-06-30", "statement_currency": "AUD"}
+    rec.update(over)
+    return rec
+
+
+def test_v8_z_red_alone_is_watch_not_amber():
+    """Ramsay/Telstra pattern: weak Z'' (negative retained earnings), healthy otherwise."""
+    out = score_company(_base(retained_earnings=-3000 * M, working_capital=-500 * M))
+    assert out["flag_z"] == "RED" and out["flag_cov"] == "GREEN"
+    assert out["status"] == "WATCH"
+
+
+def test_v8_z_red_still_supports_other_warnings():
+    out = score_company(_base(retained_earnings=-3000 * M, working_capital=-500 * M,
+                              ebitda=180 * M))       # cover 3.0x -> AMBER
+    assert out["status"] == "AMBER"
+
+
+def test_v8_loss_maker_judged_on_cash_runway():
+    """Imricor pattern: negative EBITDA, some debt. Cover would be absurd."""
+    out = score_company(_base(ebitda=-40 * M, ebit=-45 * M, cash=25 * M,
+                              total_debt=30 * M, short_term_debt=10 * M,
+                              long_term_debt=20 * M, interest_expense=2 * M))
+    assert out["credit_metric"] == "cash runway"
+    assert abs(out["cash_runway_months"] - 12 * 25 / 42) < 0.1     # ~7 months
+    assert out["flag_cov"] == "RED"
+    assert "cash runway 7 months" in out["reasons"]
+    assert "EBITDA cover" not in out["reasons"]
+
+
+def test_v8_reit_judged_on_gearing_not_cover():
+    """Dexus pattern: cover looked like 1.1x, but gearing is the lender's test."""
+    reit = dict(sector="Real Estate", industry="REIT - Diversified",
+                ebitda=70 * M, interest_expense=60 * M)          # cover 1.2x
+    out = score_company(_base(total_debt=1500 * M, **reit))      # gearing 30%
+    assert out["credit_metric"] == "gearing" and out["flag_cov"] == "GREEN"
+    out = score_company(_base(total_debt=2400 * M, **reit))      # gearing 48%
+    assert out["flag_cov"] == "RED" and "gearing 48%" in out["reasons"]
+
+
+def test_v8_toll_road_override_uses_higher_gearing_line():
+    out = score_company(_base(ticker="ALX.AX", total_debt=3000 * M))   # 60%
+    assert out["credit_metric"] == "gearing" and out["flag_cov"] == "AMBER"
+
+
+def test_v8_net_cash_switches_z_off():
+    """Explorer/biotech pattern: big accumulated losses, more cash than debt."""
+    out = score_company(_base(cash=800 * M, total_debt=20 * M, short_term_debt=5 * M,
+                              long_term_debt=15 * M, retained_earnings=-4000 * M,
+                              ebitda=300 * M))
+    assert out["flag_z"] == "OFF" and out["status"] in ("GREEN", "WATCH")
+
+
+def test_v8_no_debt_display():
+    out = score_company(_base(short_term_debt=0.0, long_term_debt=0.0, total_debt=0.0))
+    assert out["dd_display"] == "no debt"
+
+
+def test_v8_multi_signal_still_red():
+    """Star pattern survives the softer Z'' rule: Z'' red + hard red = RED."""
+    assert status_v8("AMBER", "RED", "RED", "GREEN")[0] == "RED"
+    assert status_v8("GREEN", "RED", "GREEN", "AMBER")[0] == "AMBER"   # Z'' + drawdown
+    assert status_v8("GREEN", "GREEN", "RED", "GREEN")[0] == "AMBER"   # hard red alone

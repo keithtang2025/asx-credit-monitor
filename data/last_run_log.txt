@@ -56,8 +56,8 @@ Running ASX credit monitor...
 === Watchlist status ===
 status
 GREEN    35
-WATCH    11
-AMBER     5
+WATCH    10
+AMBER     6
 RED       2
 
 === Data source cross-check (Yahoo vs FMP) ===
@@ -65,26 +65,26 @@ source_check
 N/A    53
 
 === Alerts ===
-ticker                     name status  distance_to_default  pd_1y                                                                                               reasons
-SGR.AX       STAR ENT FPO [SGR]    RED                2.562  0.005 DD 2.56 (AMBER); Z'' -4.46 (RED); EBITDA cover -1.2x (RED); one-off items -1,439m (ratios normalised)
-TWE.AX      TREA WINE FPO [TWE]    RED                5.353  0.000                                                              Z'' 0.35 (RED); EBITDA cover -4.7x (RED)
-NXT.AX         NEXTDC FPO [NXT]  AMBER                2.350  0.009                                                                     DD 2.35 (AMBER); Z'' 1.91 (AMBER)
-LLC.AX LEND LEASE STAPLED [LLC]  AMBER                2.719  0.003       DD 2.72 (AMBER); EBITDA cover 0.1x (RED); drawdown 57%; one-off items -351m (ratios normalised)
-WTC.AX       WISETECH FPO [WTC]  AMBER                3.788  0.000                                                           Z'' 1.95 (AMBER); EBITDA cover 2.9x (AMBER)
-NIC.AX     NICKLINDUS FPO [NIC]  AMBER                3.839  0.000                                               Z'' 2.20 (AMBER); EBITDA cover 1.8x (RED); drawdown 42%
-RHC.AX         RAMSAY FPO [RHC]  AMBER                6.331  0.000                                                                                        Z'' 0.89 (RED)
+ticker                     name status  distance_to_default  pd_1y                                                                                                                                       reasons
+SGR.AX       STAR ENT FPO [SGR]    RED                2.562  0.005                                  DD 2.56 (AMBER); Z'' -4.46 (RED); EBITDA cover -1.2x latest (RED); one-off items -1,439m (ratios normalised)
+TWE.AX      TREA WINE FPO [TWE]    RED                5.353  0.000                                                     Z'' 0.35 (RED); EBITDA cover -4.7x latest (RED); earnings falling: EBITDA -548% of 3y avg
+NXT.AX         NEXTDC FPO [NXT]  AMBER                2.350  0.009                                                                                                             DD 2.35 (AMBER); Z'' 1.91 (AMBER)
+LLC.AX LEND LEASE STAPLED [LLC]  AMBER                2.719  0.003 DD 2.72 (AMBER); EBITDA cover 0.1x latest (RED); earnings falling: EBITDA 9% of 3y avg; drawdown 57%; one-off items -351m (ratios normalised)
+WTC.AX       WISETECH FPO [WTC]  AMBER                3.787  0.000                                                                                            Z'' 1.95 (AMBER); EBITDA cover 2.9x latest (AMBER)
+NIC.AX     NICKLINDUS FPO [NIC]  AMBER                3.838  0.000                                                                              Z'' 2.20 (AMBER); EBITDA cover 2.8x 3y avg (AMBER); drawdown 42%
+RHC.AX         RAMSAY FPO [RHC]  AMBER                6.331  0.000                                                                                                                                Z'' 0.89 (RED)
+IGO.AX     IGOLIMITED FPO [IGO]  AMBER               10.269  0.000                                                                                                 EBITDA cover -4.9x 3y avg (RED); drawdown 48%
 
 === Watch list (single soft signal) ===
 ticker                    name  distance_to_default          reasons
 PLS.AX      PLSGROUP FPO [PLS]                 4.73     drawdown 58%
 XRO.AX          XERO FPO [XRO]                 5.18 Z'' 2.13 (AMBER)
 JHX.AX  J HARDIE CDI 1:1 [JHX]                 5.74 Z'' 2.04 (AMBER)
-AMC.AX AMCOR PLC CDI 1:1 [AMC]                 6.75 Z'' 1.27 (AMBER)
+AMC.AX AMCOR PLC CDI 1:1 [AMC]                 6.74 Z'' 1.27 (AMBER)
 SHL.AX    SONIC HLTH FPO [SHL]                 6.87 Z'' 2.17 (AMBER)
-WDS.AX      WOODSIDE FPO [WDS]                 7.15 Z'' 2.19 (AMBER)
+WDS.AX      WOODSIDE FPO [WDS]                 7.14 Z'' 2.19 (AMBER)
 LYC.AX         LYNAS FPO [LYC]                 7.69     drawdown 40%
-STO.AX        SANTOS FPO [STO]                 7.92 Z'' 1.76 (AMBER)
-IGO.AX    IGOLIMITED FPO [IGO]                10.27     drawdown 48%
+STO.AX        SANTOS FPO [STO]                 7.91 Z'' 1.76 (AMBER)
 WES.AX     WESFARMER FPO [WES]                13.32 Z'' 1.82 (AMBER)
 TLS.AX       TELSTRA FPO [TLS]                14.02 Z'' 1.18 (AMBER)
 

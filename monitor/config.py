@@ -1,22 +1,48 @@
 """Settings for the ASX credit risk monitor. Edit freely."""
 
-# Non-financial ASX names. Banks and insurers are excluded on purpose:
-# deposits and policy liabilities break the Merton "debt" assumption.
-WATCHLIST = [
-    # Resources and energy
-    "BHP.AX", "RIO.AX", "FMG.AX", "WDS.AX", "STO.AX", "S32.AX", "MIN.AX",
-    "PLS.AX", "IGO.AX", "LYC.AX", "NIC.AX", "WHC.AX", "NST.AX", "EVN.AX",
-    # Consumer and gaming
-    "WES.AX", "WOW.AX", "COL.AX", "JBH.AX", "HVN.AX", "TWE.AX", "A2M.AX",
-    "SGR.AX", "TAH.AX", "QAN.AX", "FLT.AX", "WEB.AX",
-    # Industrials, infrastructure, utilities
-    "TCL.AX", "APA.AX", "AZJ.AX", "BXB.AX", "AMC.AX", "ORA.AX",
-    "JHX.AX", "BSL.AX", "SGH.AX", "LLC.AX", "AGL.AX", "ORG.AX", "TLS.AX",
-    # Healthcare and tech
-    "CSL.AX", "RMD.AX", "SHL.AX", "RHC.AX", "NXT.AX", "XRO.AX", "WTC.AX",
-    # Property (A-REITs)
-    "GMG.AX", "SCG.AX", "SGP.AX", "MGR.AX", "VCX.AX", "DXS.AX", "CHC.AX",
-]
+# Universe: S&P/ASX 300 codes (FNArena constituent list, Nov 2026; check
+# after each quarterly rebalance in March, June, September and December).
+ASX300 = """
+360 4DX A2M A4N AAI ABB ABG ACL AEF AEL AGL AIA ALD ALK ALL ALQ ALX AMC AMP ANN
+ANZ AOV APA APE APZ ARB ARF ARU ASB ASX AUB AXQ AYA AZJ BC8 BEN BGA BGL BHP BJY
+BMN BNZ BOE BOQ BPT BRE BRG BSL BVS BWP BXB CAR CAT CBA CBO CCL CCP CDA CGF CHC
+CHN CIA CIP CKF CLW CMM CMW CNI CNU COH COL CPU CQE CQR CSC CSL CU6 CUV CWY CXO
+CYL DBI DDR DGT DMP DNL DOW DPM DRO DRR DTL DVP DXI DXS DYL EBO EDV EIQ ELD ELS
+ELV EMR EOS EQR EQT EVN EVT FBU FFM FLT FMG FPH FPR GDG GGP GLF GMD GMG GNC GNG
+GNP GOZ GPT GQG GWA GYG HDN HLI HMC HSN HUB HVN IAG IDX IEL IFT IGO ILU IMD IMR
+INA ING IPH IPX IRE JBH JDO JHX KAR KCN KLS L1G LIC LIN LLC LNW LOV LTR LYC MAF
+MAH MAQ MGH MGR MI6 MIN MLX MMS MND MP1 MPL MQG MSB MTS MYS NAB NAN NCK NEC NEM
+NEU NGI NHC NHF NIC NST NUF NWH NWL NWS NXG NXT OBM OML ORA ORG ORI PDI PDN PLS
+PME PMT PMV PNI PNR PNV PPT PRN PRU PWH PXA PYC QAN QBE QRI RDX REA REG REH RFF
+RGN RHC RIC RIO RMD RMS RPL RRL RSG RWC S32 SBM SCG SDF SDR SEK SFR SGH SGLLV SGM
+SGP SHL SHV SIG SIQ SKG SKS SLC SLX SMI SMR SNL SOL SPK SRG SRL SSM STO SUL SUN
+SX2 SXE TAH TCG TCL TEA TLC TLS TLX TNE TPG TPW TUA TWE TYR UNI VAU VCX VEA VGN
+VNT VSL VUL WA1 WAF WBC WBT WDS WEB WES WGX WHC WOR WOW WPR WTC XRO XYZ YAL ZIP
+""".split()
+
+# Financial institutions excluded on purpose: deposits, policy liabilities,
+# client money and lending books break the Merton "debt" assumption and
+# would create false alarms. Banks, insurers, lenders/BNPL, payments,
+# exchanges, fund and wealth managers, credit funds.
+EXCLUDED_FINANCIALS = set("""
+ANZ BEN BOQ CBA MYS NAB WBC JDO CCL
+AUB GDG HLI IAG MPL NHF QBE SDF SUN
+CCP FPR TYR XYZ ZIP QRI
+AEF AMP ASX BJY CGF CNI EQT GQG HMC HUB L1G MAF MQG NGI NWL PNI PPT RPL
+""".split())
+
+# Belt and braces: anything Yahoo classifies under these sectors is skipped
+# at run time too, in case the list above misses one.
+EXCLUDED_SECTORS = {"Financial Services"}
+
+# Names kept even though they are no longer in the ASX 300
+EXTRA_TICKERS = ["SGR"]   # Star Entertainment: the backtest's near-miss case
+
+WATCHLIST = [f"{c}.AX" for c in ASX300 if c not in EXCLUDED_FINANCIALS] + \
+            [f"{c}.AX" for c in EXTRA_TICKERS if c not in ASX300]
+
+# Pause between companies (seconds) so Yahoo does not rate-limit the run
+FETCH_PAUSE = 0.4
 
 # Annual risk-free rate used in Merton (set close to the current RBA cash
 # rate or the 1-year government bond yield). Update before each run.
@@ -94,10 +120,12 @@ Z_EXCLUDE_KEYWORDS = [
 ]
 # Ticker-level overrides (in case Yahoo's industry label misses one)
 Z_EXCLUDE_TICKERS = {"WOW.AX", "COL.AX", "QAN.AX", "FLT.AX", "WEB.AX", "TCL.AX",
-                     "APA.AX", "AZJ.AX", "AGL.AX", "ORG.AX", "SGP.AX"}
+                     "APA.AX", "AZJ.AX", "AGL.AX", "ORG.AX", "SGP.AX", "VGN.AX",
+                     "MTS.AX", "EDV.AX", "ALX.AX", "DBI.AX", "AIA.AX", "SIG.AX"}
 # Same idea for interest-cover thresholds when Yahoo's label misses
 COVERAGE_TICKER_OVERRIDES = {
     "TCL.AX": (1.5, 2.5), "APA.AX": (1.5, 2.5), "AZJ.AX": (1.5, 2.5),
+    "ALX.AX": (1.5, 2.5), "DBI.AX": (1.5, 2.5), "AIA.AX": (1.5, 2.5),
 }
 
 # Balance sheets older than this are flagged as stale (days)

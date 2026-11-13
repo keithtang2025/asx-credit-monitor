@@ -13,6 +13,7 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
+    timeout-minutes: 90      # ~260 companies with pauses to avoid rate limits
     steps:
       - uses: actions/checkout@v4
 

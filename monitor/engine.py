@@ -190,14 +190,38 @@ def score_company(rec: dict) -> dict:
 def run_watchlist(tickers=None, fetch=None, verbose=True) -> pd.DataFrame:
     if fetch is None:
         from .data import fetch_company as fetch
+    import time
     tickers = tickers or C.WATCHLIST
     rows, errors = [], []
+    excluded = []
+    live = fetch is None or getattr(fetch, "__module__", "") == "monitor.data"
     for tk in tickers:
+        rec = None
+        for attempt in (1, 2):                      # one retry for flaky requests
+            try:
+                rec = fetch(tk)
+                break
+            except Exception as e:
+                if attempt == 2 or "No price history" in str(e):
+                    errors.append((tk, str(e)))
+                    if verbose:
+                        print(f"  skip {tk}: {e}")
+                elif live:
+                    time.sleep(5)
+        if live:
+            time.sleep(C.FETCH_PAUSE)
+        if rec is None:
+            continue
+        if rec.get("sector") in C.EXCLUDED_SECTORS:
+            excluded.append(tk)
+            if verbose:
+                print(f"  excl {tk}: {rec.get('sector')}")
+            continue
         try:
-            rows.append(score_company(fetch(tk)))
+            rows.append(score_company(rec))
             if verbose:
                 print(f"  ok   {tk}")
-        except Exception as e:  # keep going on bad tickers
+        except Exception as e:  # keep going on bad data
             errors.append((tk, str(e)))
             if verbose:
                 print(f"  skip {tk}: {e}")
@@ -207,4 +231,5 @@ def run_watchlist(tickers=None, fetch=None, verbose=True) -> pd.DataFrame:
         df["_o"] = df["status"].map(order)
         df = df.sort_values(["_o", "distance_to_default"]).drop(columns="_o")
     df.attrs["errors"] = errors
+    df.attrs["excluded"] = excluded
     return df.reset_index(drop=True)

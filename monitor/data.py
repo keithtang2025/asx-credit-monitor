@@ -38,6 +38,23 @@ def _rows(df: pd.DataFrame, names: list[str], n: int = 4) -> list[float]:
     return [np.nan] * n
 
 
+def reconcile_shares(shares, last_price, market_cap, tol=0.20):
+    """Make price x shares agree with Yahoo's market cap.
+
+    Foreign companies listed via CDIs (e.g. ResMed, Newmont, News Corp) trade
+    in units that are a fraction of an underlying share, so Yahoo's share
+    count can be off by the CDI ratio, distorting market cap and distance to
+    default. When the two disagree by more than tol, use the implied count.
+    """
+    if not market_cap or not last_price or not shares or np.isnan(shares):
+        return shares, None
+    implied = market_cap / last_price
+    if abs(implied / shares - 1) > tol:
+        return implied, (f"share count adjusted from {shares / 1e6:,.0f}m to "
+                         f"{implied / 1e6:,.0f}m to match market cap (CDI ratio?)")
+    return shares, None
+
+
 def fx_rate(from_ccy: str, to_ccy: str = "AUD") -> float:
     """Multiply an amount in from_ccy by this to get to_ccy."""
     if not from_ccy or from_ccy == to_ccy:
@@ -68,6 +85,7 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
 
     g = lambda df, names: _first(df, names) * fx
     shares = info.get("sharesOutstanding") or g(bs, ["Ordinary Shares Number", "Share Issued"]) / fx
+    shares, share_note = reconcile_shares(shares, float(prices.iloc[-1]), info.get("marketCap"))
 
     rec = {
         "ticker": ticker,
@@ -98,6 +116,8 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
         "interest_expense": g(inc, ["Interest Expense", "Interest Expense Non Operating"]),
         "statement_date": str(bs.columns[0].date()) if bs is not None and not bs.empty else None,
     }
+    if share_note:
+        rec.setdefault("crosscheck_issues", []).append(share_note)
 
     # Multi-year history (newest first, statement currency converted)
     h = lambda df, names: [v * fx for v in _rows(df, names)]

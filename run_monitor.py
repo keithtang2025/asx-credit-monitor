@@ -15,6 +15,9 @@ from monitor.engine import run_watchlist
 DATA = Path(__file__).parent / "data"
 DATA.mkdir(exist_ok=True)
 HISTORY = DATA / "history.csv"
+HISTORY_COLS = ["ticker", "name", "status", "reasons", "distance_to_default", "pd_1y",
+                "altman_z2", "ebitda_coverage", "earnings_vs_3y", "drawdown_52w",
+                "market_cap_bn"]
 
 
 def compare_with_previous(today: pd.DataFrame) -> pd.DataFrame:
@@ -43,11 +46,14 @@ def main():
 
     changes = compare_with_previous(df)
 
-    snap = df.copy()
+    # History keeps the key columns only (the full table is in latest.csv)
+    keep = [c for c in HISTORY_COLS if c in df.columns]
+    snap = df[keep].copy()
     snap.insert(0, "run_date", str(date.today()))
     if HISTORY.exists():
         hist = pd.read_csv(HISTORY)
         hist = hist[hist["run_date"] != str(date.today())]  # rerun same day replaces
+        hist = hist[[c for c in ["run_date"] + HISTORY_COLS if c in hist.columns]]
         snap = pd.concat([hist, snap], ignore_index=True)
     snap.to_csv(HISTORY, index=False)
     df.to_csv(DATA / "latest.csv", index=False)
@@ -74,8 +80,12 @@ def main():
     if len(changes):
         print("\n=== Changes since last run ===")
         print(changes.to_string(index=False, float_format="%.2f"))
+    if df.attrs.get("excluded"):
+        print(f"\nExcluded at run time as financials: {', '.join(df.attrs['excluded'])}")
     if df.attrs.get("errors"):
-        print(f"\nSkipped {len(df.attrs['errors'])} tickers (see messages above).")
+        print(f"\nSkipped {len(df.attrs['errors'])} tickers:")
+        for tk, why in df.attrs["errors"]:
+            print(f"  {tk}: {why[:100]}")
     print(f"\nSaved {DATA / 'latest.csv'} and appended to {HISTORY}")
 
 

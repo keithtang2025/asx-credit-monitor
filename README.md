@@ -34,6 +34,26 @@ Score specific names only: `python run_monitor.py QAN.AX SGR.AX TAH.AX`
 Note: GitHub pauses scheduled workflows after 60 days with no repo
 activity. The daily commit counts as activity, so it keeps itself alive.
 
+## Universe
+
+About 260 companies: the S&P/ASX 300 (list in `monitor/config.py`) minus
+42 financial institutions, plus Star Entertainment. Financials are excluded
+because deposits, insurance liabilities, client money and loan books break
+the Merton "debt" assumption and would produce false alarms: banks,
+insurers, lenders and buy-now-pay-later, payments, the ASX itself, fund and
+wealth managers, credit funds. As a safety net, any company Yahoo
+classifies as "Financial Services" is also skipped at run time and listed in
+the log.
+
+Update the list after each quarterly index rebalance (March, June,
+September, December). Foreign companies listed via CDIs (ResMed, Newmont,
+News Corp and others) have their share count reconciled to Yahoo's market
+cap, noted in `data_issues`.
+
+A full run takes roughly 10 to 20 minutes on GitHub (a short pause between
+companies avoids Yahoo rate limits). `data/history.csv` keeps key columns
+only; the full table for the latest run is `data/latest.csv`.
+
 ## Data source
 
 v6 runs on Yahoo Finance only. The FMP cross-check code is kept in

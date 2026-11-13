@@ -397,3 +397,42 @@ def test_v6_negative_earnings_wording():
     out = score_company(rec)
     assert "EBITDA turned negative" in out["reasons"]
     assert "%" not in out["reasons"].split("earnings falling")[1].split(";")[0]
+
+
+# ---- ASX 300 universe ----
+
+from monitor import config as CFG  # noqa: E402
+from monitor.data import reconcile_shares  # noqa: E402
+
+
+def test_universe_excludes_banks_and_insurers():
+    for code in ["CBA", "NAB", "WBC", "ANZ", "MQG", "QBE", "IAG", "SUN", "ZIP"]:
+        assert f"{code}.AX" not in CFG.WATCHLIST
+    for code in ["BHP", "CSL", "WOW", "TCL", "NXT", "SGR"]:
+        assert f"{code}.AX" in CFG.WATCHLIST
+    assert 240 <= len(CFG.WATCHLIST) <= 270
+    assert len(set(CFG.WATCHLIST)) == len(CFG.WATCHLIST)
+
+
+def test_runtime_sector_exclusion():
+    def fake(tk):
+        E, _ = simulate_equity(100, 10, 0.2, seed=2)
+        sector = "Financial Services" if tk == "FIN.AX" else "Industrials"
+        return {"ticker": tk, "name": tk, "sector": sector, "industry": "",
+                "prices": E / 10, "market_cap_series": E, "short_term_debt": 5.0,
+                "long_term_debt": 5.0, "total_debt": 10.0, "cash": 1.0,
+                "total_assets": 100.0, "total_liabilities": 30.0, "working_capital": 5.0,
+                "retained_earnings": 20.0, "book_equity": 70.0, "ebit": 10.0,
+                "ebitda": 14.0, "interest_expense": 1.0, "statement_date": "2026-06-30",
+                "statement_currency": "AUD"}
+    df = run_watchlist(["FIN.AX", "IND.AX"], fetch=fake, verbose=False)
+    assert list(df["ticker"]) == ["IND.AX"]
+    assert df.attrs["excluded"] == ["FIN.AX"]
+
+
+def test_cdi_share_count_reconciled_to_market_cap():
+    # ResMed-style CDI: Yahoo share count is underlying shares, 10 CDIs each
+    shares, note = reconcile_shares(147e6, 40.0, 58.8e9)
+    assert abs(shares - 1.47e9) < 1e6 and "CDI" in note
+    shares, note = reconcile_shares(1.0e9, 10.0, 10.2e9)   # within 20%: unchanged
+    assert shares == 1.0e9 and note is None

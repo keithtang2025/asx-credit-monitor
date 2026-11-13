@@ -147,10 +147,39 @@ tests/              synthetic-data tests (KMV recovers known asset vol and DD)
 - **REITs.** DD works, but Altman Z'' is less meaningful for property
   trusts. Gearing and ICR versus covenants matter more.
 
+## Backtest
+
+Does distance to default warn before real credit events? `run_backtest.py`
+replays it week by week using only information available at each date
+(balance sheets count from 60 days after their date).
+
+Cases live in `backtest_cases.py`:
+
+| Case | Type | Event |
+|---|---|---|
+| Virgin Australia | failure | Voluntary administration, 21 Apr 2020 |
+| Mosaic Brands | failure | Voluntary administration, 28 Oct 2024 (tested with financial debt only and with all creditor claims) |
+| Star Entertainment | near miss | Trading halt then suspension, 28 Feb 2025 |
+| Mineral Resources | control | Stressed, no default |
+| Woolworths | control | Healthy |
+
+Metrics: first sustained AMBER (DD below 3.5) and RED (below 2.0), lead time
+to the event, lowest DD, and for controls the share of weeks spent in
+AMBER/RED (false alarms).
+
+Run it: Actions tab > **Backtest** > Run workflow. Results (charts, weekly
+CSVs, `summary.md`) are committed to `backtest/results/` and shown on the
+run page. Locally: `python run_backtest.py`.
+
+Delisted companies need a price file, see `backtest/prices/README.md`.
+Cases without data are skipped and listed in the summary.
+
+Known limits: only the market signal is backtested (Yahoo keeps 4 years of
+statements, too short for the accounting signals); the risk-free rate is
+one figure per case; debt between balance dates is held flat.
+
 ## Roadmap
 
-1. **Backtest.** Run rolling DD on past ASX failures and near-failures
-   (e.g. Virgin Australia 2020, Mosaic Brands 2024) and measure lead time.
 2. **Announcement NLP.** Pull ASX announcements daily and flag trading
    halts, going-concern language, auditor changes, covenant waivers and
    deeply discounted raisings.

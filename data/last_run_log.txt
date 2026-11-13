@@ -1,0 +1,103 @@
+Running ASX credit monitor...
+  ok   BHP.AX
+  ok   RIO.AX
+  ok   FMG.AX
+  ok   WDS.AX
+  ok   STO.AX
+  ok   S32.AX
+  ok   MIN.AX
+  ok   PLS.AX
+  ok   IGO.AX
+  ok   LYC.AX
+  ok   NIC.AX
+  ok   WHC.AX
+  ok   NST.AX
+  ok   EVN.AX
+  ok   WES.AX
+  ok   WOW.AX
+  ok   COL.AX
+  ok   JBH.AX
+  ok   HVN.AX
+  ok   TWE.AX
+  ok   A2M.AX
+  ok   SGR.AX
+  ok   TAH.AX
+  ok   QAN.AX
+  ok   FLT.AX
+  ok   WEB.AX
+  ok   TCL.AX
+  ok   APA.AX
+  ok   AZJ.AX
+  skip QUB.AX: No price history for QUB.AX
+  ok   BXB.AX
+  ok   AMC.AX
+  ok   ORA.AX
+  ok   JHX.AX
+  ok   BSL.AX
+  skip SVW.AX: No price history for SVW.AX
+  ok   LLC.AX
+  ok   AGL.AX
+  ok   ORG.AX
+  ok   TLS.AX
+  ok   CSL.AX
+  ok   RMD.AX
+  ok   SHL.AX
+  ok   RHC.AX
+  ok   NXT.AX
+  ok   XRO.AX
+  ok   WTC.AX
+  ok   GMG.AX
+  ok   SCG.AX
+  ok   SGP.AX
+  ok   MGR.AX
+  ok   VCX.AX
+  ok   DXS.AX
+  ok   CHC.AX
+
+=== Watchlist status ===
+status
+AMBER    18
+RED      17
+GREEN    17
+
+=== Alerts ===
+ticker                     name status  distance_to_default  pd_1y                                    reasons
+NXT.AX         NEXTDC FPO [NXT]    RED                2.350  0.009                DD 2.35; Z'' 1.91; ICR 1.4x
+SGR.AX       STAR ENT FPO [SGR]    RED                2.562  0.005             DD 2.56; Z'' -10.08; ICR -1.8x
+LLC.AX LEND LEASE STAPLED [LLC]    RED                2.719  0.003 DD 2.72; Z'' 0.90; ICR -1.5x; drawdown 57%
+WEB.AX        WEBBEDS FPO [WEB]    RED                3.597  0.000                         Z'' 0.46; ICR 2.6x
+NIC.AX     NICKLINDUS FPO [NIC]    RED                3.839  0.000           Z'' 2.19; ICR 1.0x; drawdown 42%
+TAH.AX        TABCORP FPO [TAH]    RED                4.015  0.000                         Z'' 0.00; ICR 2.1x
+ORA.AX          ORORA FPO [ORA]    RED                4.975  0.000                       Z'' 1.92; ICR -10.3x
+FLT.AX     FLIGHT CTR FPO [FLT]    RED                5.248  0.000                                   Z'' 0.80
+TWE.AX      TREA WINE FPO [TWE]    RED                5.353  0.000                        Z'' 0.35; ICR -5.4x
+QAN.AX         QANTAS FPO [QAN]    RED                5.577  0.000                                  Z'' -1.17
+RHC.AX         RAMSAY FPO [RHC]    RED                6.331  0.000                         Z'' 0.88; ICR 2.6x
+AGL.AX     AGL ENERGY FPO [AGL]    RED                7.487  0.000                                   Z'' 1.06
+CSL.AX            CSL FPO [CSL]    RED                7.505  0.000                                  ICR -9.7x
+COL.AX     COLESGROUP FPO [COL]    RED                9.689  0.000                                   Z'' 0.04
+WOW.AX     WOOLWORTHS FPO [WOW]    RED                9.901  0.000                                   Z'' 0.03
+APA.AX  APA GROUP STAPLED [APA]    RED               10.074  0.000                         Z'' 0.72; ICR 1.6x
+TCL.AX TRANSURBAN STAPLED [TCL]    RED               12.427  0.000                        Z'' -0.11; ICR 1.4x
+WTC.AX       WISETECH FPO [WTC]  AMBER                3.788  0.000                         Z'' 1.95; ICR 2.6x
+PLS.AX       PLSGROUP FPO [PLS]  AMBER                4.734  0.000                               drawdown 58%
+XRO.AX           XERO FPO [XRO]  AMBER                5.179  0.000                                   Z'' 2.13
+WHC.AX     WHITEHAVEN FPO [WHC]  AMBER                5.250  0.000                                   ICR 2.7x
+JHX.AX   J HARDIE CDI 1:1 [JHX]  AMBER                5.740  0.000                         Z'' 1.90; ICR 1.9x
+AMC.AX  AMCOR PLC CDI 1:1 [AMC]  AMBER                6.745  0.000                         Z'' 1.22; ICR 2.9x
+SHL.AX     SONIC HLTH FPO [SHL]  AMBER                6.866  0.000                                   Z'' 2.13
+WDS.AX       WOODSIDE FPO [WDS]  AMBER                7.145  0.000                                   Z'' 2.17
+LYC.AX          LYNAS FPO [LYC]  AMBER                7.691  0.000                               drawdown 40%
+STO.AX         SANTOS FPO [STO]  AMBER                7.917  0.000                                   Z'' 1.73
+DXS.AX      DEXUS STAPLED [DXS]  AMBER                8.014  0.000                                   Z'' 2.41
+SCG.AX    SCENTRE STAPLED [SCG]  AMBER                8.238  0.000                                   Z'' 2.18
+MGR.AX MIRVAC GRP STAPLED [MGR]  AMBER                8.270  0.000                                   Z'' 2.41
+AZJ.AX        AURIZON FPO [AZJ]  AMBER                8.292  0.000                         Z'' 1.30; ICR 2.5x
+IGO.AX     IGOLIMITED FPO [IGO]  AMBER               10.269  0.000                               drawdown 48%
+ORG.AX     ORIGIN ENE FPO [ORG]  AMBER               10.523  0.000                                   Z'' 1.65
+WES.AX      WESFARMER FPO [WES]  AMBER               13.317  0.000                                   Z'' 1.82
+TLS.AX        TELSTRA FPO [TLS]  AMBER               14.021  0.000                                   Z'' 1.15
+
+Skipped 2 tickers (see messages above).
+
+Saved /home/runner/work/asx-credit-monitor/asx-credit-monitor/data/latest.csv and appended to /home/runner/work/asx-credit-monitor/asx-credit-monitor/data/history.csv

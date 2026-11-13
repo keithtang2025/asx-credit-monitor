@@ -56,13 +56,14 @@ For each company the `source_check` column shows:
 Fields missing from Yahoo are filled from FMP before scoring, and noted.
 Without a key the monitor runs on Yahoo alone.
 
-## How it works (v4 scoring)
+## How it works (v5 scoring)
 
 | Signal | Method | RED | AMBER |
 |---|---|---|---|
 | Distance to default (lead signal) | KMV iteration on 1 year of daily market cap; default point = ST debt + 0.5 x LT debt; risk-neutral drift | < 2.0 | < 3.5 |
 | Altman Z'' (sector-aware) | Uses EBIT normalised for one-offs; switched OFF for supermarkets, airlines, travel, infrastructure, utilities and property | < 1.1 | < 2.6 |
-| Interest cover | Normalised EBITDA / interest; thresholds by sector (below) | sector | sector |
+| Interest cover | Normalised EBITDA / interest. Cyclicals (Basic Materials, Energy) use the 3-year average; everyone else the latest year. Thresholds by sector (below) | sector | sector |
+| Earnings trend | Latest normalised EBITDA versus its 3-year average | | < 60% |
 | Market stress | Drawdown from 52-week high | | >= 40% |
 
 Interest cover thresholds (red / amber): default 2.0x / 4.0x; REITs and
@@ -76,6 +77,18 @@ utilities 1.5x / 2.5x.
   accounting signals amber, or a drawdown together with any accounting warning
 - **WATCH**: a single accounting signal amber, or a drawdown on its own
 - **GREEN**: everything else
+
+**How EBITDA is built.** EBITDA is calculated as EBIT plus depreciation and
+amortisation, with unusual items added back, for each of the last 3 to 4
+years. Yahoo's own EBITDA field is only a fallback, because it proved
+unreliable (Treasury Wine showed -508m when EBIT + D&A was +223m). When the
+two differ by more than 10% it is noted in `data_issues`.
+
+**Through the cycle.** Mining and energy earnings swing with commodity
+prices, so their interest cover is judged on the 3-year average. Averages
+hide deterioration, so every company also gets an earnings-trend signal:
+latest EBITDA below 60% of its 3-year average adds an AMBER-level signal.
+On its own it gives WATCH; it never creates a RED by itself.
 
 **One-off adjustment.** Ratios use Yahoo's "Normalized EBITDA" and EBIT with
 unusual items added back. If the ratios have been cleaned this way and are
@@ -99,6 +112,8 @@ from the watchlist (QUB, taken private in 2026).
 - v4: fixed the shared-cause rule, which wrongly demoted Star to AMBER by
   merging signals that were already cleaned of one-offs. Added FMP as a
   second source to cross-check Yahoo and fill gaps.
+- v5: EBITDA built from EBIT + D&A (fixes the Treasury Wine false RED),
+  3-year average cover for cyclicals, and an earnings-trend signal.
 
 Thresholds live in `monitor/config.py`. Treat them as a starting risk
 appetite and recalibrate after backtesting.

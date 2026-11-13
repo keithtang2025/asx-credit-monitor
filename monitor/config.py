@@ -57,6 +57,20 @@ RED_SIGNALS_NEEDED = 2
 # interest cover count as ONE signal, because they share the same cause.
 ONE_OFF_SHARE = 0.25
 
+# --- v5: earnings through the cycle ---
+# Sectors where interest cover is judged on the 3-year average EBITDA, so a
+# single commodity downturn year does not trigger alerts by itself.
+CYCLICAL_SECTORS = {"Basic Materials", "Energy"}
+CYCLICAL_TICKERS = set()          # add codes here to force 3-year treatment
+MIN_YEARS_FOR_AVERAGE = 2         # need at least this many years for an average
+
+# "Earnings falling" flag: latest normalised EBITDA below this share of the
+# 3-year average (applies to every company, cyclical or not).
+EARNINGS_FALL_RATIO = 0.60
+
+# Flag Yahoo's EBITDA field when it differs from EBIT + D&A by more than this
+EBITDA_FIELD_TOLERANCE = 0.10
+
 # Old or renamed ASX codes. Delisted names should be removed from WATCHLIST.
 TICKER_ALIASES = {
     "SVW.AX": "SGH.AX",   # Seven Group Holdings renamed SGH Ltd, Nov 2024

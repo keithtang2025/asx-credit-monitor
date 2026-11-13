@@ -24,6 +24,20 @@ def _first(df: pd.DataFrame, names: list[str]):
     return np.nan
 
 
+def _rows(df: pd.DataFrame, names: list[str], n: int = 4) -> list[float]:
+    """Up to n most recent annual values (newest first) of the first matching row.
+
+    Keeps NaN gaps so the years stay aligned across different line items.
+    """
+    if df is None or df.empty:
+        return [np.nan] * n
+    for name in names:
+        if name in df.index:
+            vals = pd.to_numeric(df.loc[name].iloc[:n], errors="coerce").astype(float).tolist()
+            return vals + [np.nan] * (n - len(vals))
+    return [np.nan] * n
+
+
 def fx_rate(from_ccy: str, to_ccy: str = "AUD") -> float:
     """Multiply an amount in from_ccy by this to get to_ccy."""
     if not from_ccy or from_ccy == to_ccy:
@@ -47,7 +61,7 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
     info = t.info or {}
     prices.index = prices.index.tz_localize(None)
 
-    bs, inc = t.balance_sheet, t.income_stmt
+    bs, inc, cf = t.balance_sheet, t.income_stmt, t.cashflow
     fin_ccy = info.get("financialCurrency") or "AUD"
     px_ccy = info.get("currency") or "AUD"
     fx = fx_rate(fin_ccy, px_ccy)  # convert statements into price currency
@@ -84,6 +98,20 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
         "statement_date": str(bs.columns[0].date()) if bs is not None and not bs.empty else None,
     }
 
+    # Multi-year history (newest first, statement currency converted)
+    h = lambda df, names: [v * fx for v in _rows(df, names)]
+    da = h(inc, ["Reconciled Depreciation"])
+    if all(np.isnan(da)):
+        da = h(cf, ["Depreciation And Amortization", "Depreciation Amortization Depletion"])
+    rec["history"] = {
+        "ebit": h(inc, ["EBIT", "Operating Income"]),
+        "da": da,
+        "unusual": h(inc, ["Total Unusual Items", "Total Unusual Items Excluding Goodwill"]),
+        "interest": h(inc, ["Interest Expense", "Interest Expense Non Operating"]),
+        "ebitda_yahoo": h(inc, ["EBITDA"]),
+        "ebitda_norm_yahoo": h(inc, ["Normalized EBITDA"]),
+    }
+
     # Second source: cross-check and fill gaps BEFORE normalising
     from .crosscheck import compare_and_fill, fetch_fmp
     fmp = fetch_fmp(ticker)
@@ -93,20 +121,74 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
     return normalise(rec)
 
 
-def normalise(rec: dict) -> dict:
-    """Add one-off-adjusted EBIT and EBITDA.
+def _nan(x) -> bool:
+    return x is None or (isinstance(x, float) and np.isnan(x))
 
+
+def _year_ebitda(ebit, da, unusual, yahoo_norm, yahoo_rep):
+    """Normalised EBITDA for one year and where it came from.
+
+    Preferred: EBIT + D&A with unusual items added back. Yahoo's own EBITDA
+    fields are fallbacks because they proved unreliable (e.g. TWE, CSL).
     Yahoo reports unusual items with their P&L sign (losses negative), so
     subtracting them adds back impairments and restructuring charges.
     """
+    adj = 0.0 if _nan(unusual) else unusual
+    if not _nan(ebit) and not _nan(da):
+        return ebit + abs(da) - adj, "EBIT + D&A"
+    if not _nan(yahoo_norm):
+        return yahoo_norm, "Yahoo normalized EBITDA"
+    if not _nan(yahoo_rep):
+        return yahoo_rep - adj, "Yahoo EBITDA"
+    return np.nan, "missing"
+
+
+def normalise(rec: dict) -> dict:
+    """Latest and 3-year normalised EBIT/EBITDA, plus a source check on EBITDA."""
+    from .config import EBITDA_FIELD_TOLERANCE, MIN_YEARS_FOR_AVERAGE
+
     unusual = rec.get("unusual_items", np.nan)
-    ebit_rep, ebitda_rep = rec["ebit_reported"], rec["ebitda_reported"]
-    ebitda_norm = rec.get("ebitda_normalized_yahoo", np.nan)
-    has_unusual = not np.isnan(unusual)
-    if np.isnan(ebitda_norm):
-        ebitda_norm = ebitda_rep - unusual if has_unusual else ebitda_rep
-    rec["ebitda"] = ebitda_norm
-    rec["ebit"] = ebit_rep - unusual if has_unusual else ebit_rep
+    ebit_rep = rec.get("ebit_reported", np.nan)
+    hist = rec.get("history")
+
+    if hist:
+        # Latest year uses the (possibly FMP-filled) headline fields
+        hist["ebit"][0] = ebit_rep if not _nan(ebit_rep) else hist["ebit"][0]
+        years = [_year_ebitda(hist["ebit"][i], hist["da"][i], hist["unusual"][i],
+                              hist["ebitda_norm_yahoo"][i], hist["ebitda_yahoo"][i])
+                 for i in range(len(hist["ebit"]))]
+        ebitda_years = [v for v, _ in years]
+        rec["ebitda"], rec["ebitda_source"] = years[0]
+        if _nan(rec["ebitda"]) and not _nan(rec.get("ebitda_reported", np.nan)):
+            rec["ebitda"], rec["ebitda_source"] = rec["ebitda_reported"], "FMP/Yahoo EBITDA"
+
+        last3 = [v for v in ebitda_years[:3] if not _nan(v)]
+        ints = [abs(v) for v in hist["interest"][:3] if not _nan(v)]
+        enough = len(last3) >= MIN_YEARS_FOR_AVERAGE and len(ints) >= MIN_YEARS_FOR_AVERAGE
+        rec["ebitda_3y"] = float(np.mean(last3)) if enough else np.nan
+        rec["interest_3y"] = float(np.mean(ints)) if enough else np.nan
+        rec["ebitda_history"] = ebitda_years
+
+        # Source check: Yahoo's EBITDA field vs our EBIT + D&A build
+        y = hist["ebitda_yahoo"][0]
+        built_raw = (hist["ebit"][0] + abs(hist["da"][0])
+                     if not _nan(hist["ebit"][0]) and not _nan(hist["da"][0]) else np.nan)
+        if not _nan(y) and not _nan(built_raw):
+            diff = abs(y - built_raw)
+            if diff > 5e6 and diff > EBITDA_FIELD_TOLERANCE * max(abs(y), abs(built_raw)):
+                rec.setdefault("crosscheck_issues", []).append(
+                    f"Yahoo EBITDA field {y / 1e6:,.0f}m differs from EBIT + D&A "
+                    f"{built_raw / 1e6:,.0f}m; used EBIT + D&A")
+    else:
+        ebitda_norm = rec.get("ebitda_normalized_yahoo", np.nan)
+        if _nan(ebitda_norm):
+            ebitda_rep = rec.get("ebitda_reported", np.nan)
+            ebitda_norm = ebitda_rep - unusual if not _nan(unusual) else ebitda_rep
+        rec["ebitda"], rec["ebitda_source"] = ebitda_norm, "Yahoo/FMP EBITDA"
+        rec["ebitda_3y"] = rec["interest_3y"] = np.nan
+
+    rec["ebit"] = ebit_rep - unusual if not _nan(unusual) else ebit_rep
     # True when the ratios really are one-off adjusted
-    rec["normalised"] = has_unusual or not np.isnan(rec.get("ebitda_normalized_yahoo", np.nan))
+    rec["normalised"] = (not _nan(unusual)
+                         or not _nan(rec.get("ebitda_normalized_yahoo", np.nan)))
     return rec

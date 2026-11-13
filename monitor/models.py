@@ -146,15 +146,18 @@ def status_v2(flag_dd: str, signal_flags: list[str], flag_mkt: str,
     return "GREEN"
 
 
-def status_v3(flag_dd: str, flag_z: str, flag_cov: str, flag_mkt: str,
-              shared_cause: bool = False, red_needed: int = 2) -> tuple[str, int]:
-    """v3 rule with a WATCH tier and a shared-cause adjustment.
+def status_v5(flag_dd: str, flag_z: str, flag_cov: str, flag_mkt: str,
+              flag_trend: str = "GREEN", shared_cause: bool = False,
+              red_needed: int = 2) -> tuple[str, int]:
+    """Status with WATCH tier, shared-cause merge and an earnings-trend signal.
 
+    flag_trend is only ever AMBER or GREEN: falling earnings support an alert
+    but never create a RED on their own.
     Returns (status, number of independent red signals).
     """
     acct = [f for f in (flag_z, flag_cov) if f not in ("OFF", "N/A")]
     acct_red = sum(f == "RED" for f in acct)
-    acct_amber = sum(f == "AMBER" for f in acct)
+    acct_amber = sum(f == "AMBER" for f in acct) + (flag_trend == "AMBER")
     if shared_cause and acct_red > 1:
         acct_red = 1          # one impairment hitting two ratios is one signal
     n_red = acct_red + (flag_dd == "RED")
@@ -170,6 +173,11 @@ def status_v3(flag_dd: str, flag_z: str, flag_cov: str, flag_mkt: str,
     if flag_dd == "N/A" and not acct:
         return "N/A", n_red
     return "GREEN", n_red
+
+
+def status_v3(flag_dd, flag_z, flag_cov, flag_mkt, shared_cause=False, red_needed=2):
+    """v3 rule (no trend signal). Kept for comparison and tests."""
+    return status_v5(flag_dd, flag_z, flag_cov, flag_mkt, "GREEN", shared_cause, red_needed)
 
 
 def coverage(numerator, interest_expense) -> float:

@@ -1,4 +1,4 @@
-"""Runs the models over a company record and the full watchlist (v4 scoring)."""
+"""Runs the models over a company record and the full watchlist (v5 scoring)."""
 from __future__ import annotations
 
 from datetime import date
@@ -8,7 +8,7 @@ import pandas as pd
 
 from . import config as C
 from .models import (altman_z2, coverage, default_point, merton_kmv,
-                     net_debt_to_ebitda, rag, status_v3)
+                     net_debt_to_ebitda, rag, status_v5)
 
 
 def _nan(x) -> bool:
@@ -68,7 +68,24 @@ def score_company(rec: dict) -> dict:
     z_on = z_applies(rec)
     z = altman_z2(rec["working_capital"], rec["retained_earnings"], rec["ebit"],
                   rec["book_equity"], rec["total_assets"], rec["total_liabilities"])
-    ebitda_cov = coverage(rec["ebitda"], rec["interest_expense"])
+    cov_latest = coverage(rec["ebitda"], rec["interest_expense"])
+    ebitda_3y, int_3y = rec.get("ebitda_3y", np.nan), rec.get("interest_3y", np.nan)
+    cov_3y = coverage(ebitda_3y, int_3y) if not _nan(ebitda_3y) else np.nan
+
+    # Cyclicals are judged through the cycle; everyone else on the latest year
+    cyclical = (rec.get("sector") in C.CYCLICAL_SECTORS
+                or rec["ticker"] in C.CYCLICAL_TICKERS)
+    if cyclical and not _nan(cov_3y):
+        ebitda_cov, cov_basis = cov_3y, "3y avg"
+    else:
+        ebitda_cov, cov_basis = cov_latest, "latest"
+
+    # Earnings trend: latest normalised EBITDA versus its 3-year average
+    trend = np.nan
+    if not _nan(ebitda_3y) and ebitda_3y > 0 and not _nan(rec["ebitda"]):
+        trend = rec["ebitda"] / ebitda_3y
+    f_trend = ("N/A" if _nan(trend)
+               else "AMBER" if trend < C.EARNINGS_FALL_RATIO else "GREEN")
     ebit_cov = coverage(rec["ebit"], rec["interest_expense"])
     lev = net_debt_to_ebitda(rec["total_debt"], rec["cash"], rec["ebitda"])
 
@@ -97,7 +114,8 @@ def score_company(rec: dict) -> dict:
     # weakness is underlying and the two signals are independent.
     normalised = rec.get("normalised", False)
     shared_cause = one_off and not normalised
-    status, n_red = status_v3(f_dd, f_z, f_cov, f_mkt, shared_cause=shared_cause,
+    status, n_red = status_v5(f_dd, f_z, f_cov, f_mkt, f_trend,
+                              shared_cause=shared_cause,
                               red_needed=C.RED_SIGNALS_NEEDED)
 
     reasons = []
@@ -106,7 +124,9 @@ def score_company(rec: dict) -> dict:
     if f_z in ("RED", "AMBER"):
         reasons.append(f"Z'' {z:.2f} ({f_z})")
     if f_cov in ("RED", "AMBER"):
-        reasons.append(f"EBITDA cover {ebitda_cov:.1f}x ({f_cov})")
+        reasons.append(f"EBITDA cover {ebitda_cov:.1f}x {cov_basis} ({f_cov})")
+    if f_trend == "AMBER":
+        reasons.append(f"earnings falling: EBITDA {trend:.0%} of 3y avg")
     if f_mkt == "AMBER":
         reasons.append(f"drawdown {drawdown:.0%}")
     if one_off:
@@ -131,6 +151,15 @@ def score_company(rec: dict) -> dict:
         "altman_z2": z if z_on else np.nan,
         "z_applies": z_on,
         "ebitda_coverage": ebitda_cov,
+        "coverage_basis": cov_basis,
+        "ebitda_cover_latest": cov_latest,
+        "ebitda_cover_3y": cov_3y,
+        "earnings_vs_3y": trend,
+        "flag_trend": f_trend,
+        "cyclical": cyclical,
+        "ebitda_m": rec["ebitda"] / 1e6 if not _nan(rec["ebitda"]) else np.nan,
+        "ebitda_3y_m": ebitda_3y / 1e6 if not _nan(ebitda_3y) else np.nan,
+        "ebitda_source": rec.get("ebitda_source", ""),
         "coverage_red_line": cov_thr[0],
         "ebit_coverage": ebit_cov,
         "one_off_affected": one_off,

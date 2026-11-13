@@ -4,7 +4,7 @@ import pandas as pd
 from scipy.stats import norm
 
 from monitor.engine import coverage_thresholds, run_watchlist, score_company, z_applies
-from monitor.models import _bs_equity, altman_z2, merton_kmv, rag, status_v2, status_v3
+from monitor.models import _bs_equity, altman_z2, merton_kmv, rag, status_v2, status_v3, status_v5
 
 
 def simulate_equity(V0, D, sigma_v, r=0.04, T=1.0, n=252, seed=0):
@@ -238,3 +238,88 @@ def test_crosscheck_different_periods_not_compared():
 
 def test_crosscheck_without_key_is_na():
     assert compare_and_fill(_yahoo_rec(), None)["source_check"] == "N/A"
+
+
+# ---- v5: EBITDA built from EBIT + D&A, 3-year averages, earnings trend ----
+
+M = 1e6
+
+
+def _company_with_history(sector, ebit, da, interest, ebitda_yahoo, seed=21):
+    E, _ = simulate_equity(100, 12, 0.25, seed=seed)
+    rec = {"ticker": "HIS.AX", "name": "Hist", "sector": sector, "industry": "",
+           "prices": E, "market_cap_series": E * 1e8,
+           "short_term_debt": 200 * M, "long_term_debt": 2000 * M, "total_debt": 2200 * M,
+           "cash": 300 * M, "total_assets": 8000 * M, "total_liabilities": 5000 * M,
+           "working_capital": 0.0, "retained_earnings": -500 * M, "book_equity": 3000 * M,
+           "ebit_reported": ebit[0], "ebitda_reported": ebitda_yahoo[0],
+           "ebitda_normalized_yahoo": np.nan, "unusual_items": np.nan,
+           "interest_expense": interest[0], "statement_date": "2026-06-30",
+           "statement_currency": "AUD",
+           "history": {"ebit": list(ebit), "da": list(da),
+                       "unusual": [np.nan] * 4, "interest": list(interest),
+                       "ebitda_yahoo": list(ebitda_yahoo),
+                       "ebitda_norm_yahoo": [np.nan] * 4}}
+    return normalise(rec)
+
+
+def _twe():
+    """Treasury Wine FY26-FY23 from the user's screenshot (AUD, newest first)."""
+    return _company_with_history(
+        "Consumer Defensive",
+        ebit=[57.5 * M, 518.1 * M, 42.6 * M, 182.7 * M],
+        da=[165.3 * M, 166.5 * M, 155.5 * M, 161.7 * M],
+        interest=[108.1 * M, 109.9 * M, 98.3 * M, 72.7 * M],
+        ebitda_yahoo=[-508 * M, np.nan, np.nan, np.nan])   # the bad Yahoo value
+
+
+def test_v5_twe_ebitda_built_from_ebit_plus_da():
+    rec = _twe()
+    assert abs(rec["ebitda"] - 222.8 * M) < 0.1 * M
+    assert rec["ebitda_source"] == "EBIT + D&A"
+    assert any("Yahoo EBITDA field" in i for i in rec["crosscheck_issues"])
+
+
+def test_v5_twe_cover_and_average_match_hand_calculation():
+    out = score_company(_twe())
+    assert abs(out["ebitda_cover_latest"] - 222.8 / 108.1) < 0.01      # 2.06x
+    assert abs(out["ebitda_cover_3y"] - 368.5 / 105.43) < 0.02         # 3.50x
+    assert out["coverage_basis"] == "latest"                            # not cyclical
+    assert out["flag_cov"] == "AMBER"
+    assert abs(out["earnings_vs_3y"] - 0.6046) < 0.001                  # just above 60%
+
+
+def test_v5_twe_no_longer_red():
+    out = score_company(_twe())
+    assert out["status"] == "AMBER"
+
+
+def _miner(sector):
+    """Commodity downturn: one terrible year after two strong ones."""
+    return _company_with_history(
+        sector,
+        ebit=[50 * M, 900 * M, 800 * M, 700 * M],
+        da=[100 * M] * 4,
+        interest=[100 * M] * 4,
+        ebitda_yahoo=[150 * M, 1000 * M, 900 * M, 800 * M])
+
+
+def test_v5_cyclical_uses_three_year_average():
+    out = score_company(_miner("Basic Materials"))
+    assert out["coverage_basis"] == "3y avg"
+    assert out["flag_cov"] == "GREEN"          # 6.8x through the cycle
+    assert out["flag_trend"] == "AMBER"        # but the fall is still flagged
+    assert out["status"] in ("WATCH", "AMBER")
+    assert "earnings falling" in out["reasons"]
+
+
+def test_v5_same_numbers_non_cyclical_judged_on_latest_year():
+    out = score_company(_miner("Healthcare"))
+    assert out["coverage_basis"] == "latest"
+    assert out["flag_cov"] == "RED"            # 1.5x latest
+    assert out["status"] in ("AMBER", "RED")
+
+
+def test_v5_trend_never_red_on_its_own():
+    assert status_v5("GREEN", "GREEN", "GREEN", "GREEN", "AMBER")[0] == "WATCH"
+    assert status_v5("GREEN", "AMBER", "GREEN", "GREEN", "AMBER")[0] == "AMBER"

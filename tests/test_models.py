@@ -245,18 +245,21 @@ def test_crosscheck_without_key_is_na():
 M = 1e6
 
 
-def _company_with_history(sector, ebit, da, interest, ebitda_yahoo, seed=21):
+def _company_with_history(sector, ebit, da, interest, ebitda_yahoo, seed=21,
+                          opinc=None, cash=300 * M, debt=2200 * M):
     E, _ = simulate_equity(100, 12, 0.25, seed=seed)
     rec = {"ticker": "HIS.AX", "name": "Hist", "sector": sector, "industry": "",
            "prices": E, "market_cap_series": E * 1e8,
-           "short_term_debt": 200 * M, "long_term_debt": 2000 * M, "total_debt": 2200 * M,
-           "cash": 300 * M, "total_assets": 8000 * M, "total_liabilities": 5000 * M,
+           "short_term_debt": 200 * M, "long_term_debt": 2000 * M, "total_debt": debt,
+           "cash": cash, "total_assets": 8000 * M, "total_liabilities": 5000 * M,
            "working_capital": 0.0, "retained_earnings": -500 * M, "book_equity": 3000 * M,
            "ebit_reported": ebit[0], "ebitda_reported": ebitda_yahoo[0],
+           "operating_income": opinc[0] if opinc else np.nan,
            "ebitda_normalized_yahoo": np.nan, "unusual_items": np.nan,
            "interest_expense": interest[0], "statement_date": "2026-06-30",
            "statement_currency": "AUD",
            "history": {"ebit": list(ebit), "da": list(da),
+                       "opinc": list(opinc) if opinc else [np.nan] * 4,
                        "unusual": [np.nan] * 4, "interest": list(interest),
                        "ebitda_yahoo": list(ebitda_yahoo),
                        "ebitda_norm_yahoo": [np.nan] * 4}}
@@ -276,8 +279,7 @@ def _twe():
 def test_v5_twe_ebitda_built_from_ebit_plus_da():
     rec = _twe()
     assert abs(rec["ebitda"] - 222.8 * M) < 0.1 * M
-    assert rec["ebitda_source"] == "EBIT + D&A"
-    assert any("Yahoo EBITDA field" in i for i in rec["crosscheck_issues"])
+    assert rec["ebitda_source"] == "EBIT + D&A"   # no operating-income row given
 
 
 def test_v5_twe_cover_and_average_match_hand_calculation():
@@ -323,3 +325,75 @@ def test_v5_same_numbers_non_cyclical_judged_on_latest_year():
 def test_v5_trend_never_red_on_its_own():
     assert status_v5("GREEN", "GREEN", "GREEN", "GREEN", "AMBER")[0] == "WATCH"
     assert status_v5("GREEN", "AMBER", "GREEN", "GREEN", "AMBER")[0] == "AMBER"
+
+
+
+# ---- v6: operating income instead of Yahoo EBIT, net cash, wording ----
+
+def _twe_real():
+    """TWE as Yahoo actually serves it: EBIT -673m (impairment below the
+    operating line) while operating profit is +57.5m (user's screenshot)."""
+    return _company_with_history(
+        "Consumer Defensive",
+        ebit=[-673 * M, 518.1 * M, 42.6 * M, 182.7 * M],
+        opinc=[57.5 * M, 518.1 * M, 42.6 * M, 182.7 * M],
+        da=[165.3 * M, 166.5 * M, 155.5 * M, 161.7 * M],
+        interest=[108.1 * M, 109.9 * M, 98.3 * M, 72.7 * M],
+        ebitda_yahoo=[-508 * M, 684.6 * M, 198.1 * M, 344.4 * M])
+
+
+def test_v6_twe_uses_operating_income_not_yahoo_ebit():
+    rec = _twe_real()
+    assert abs(rec["ebitda"] - 222.8 * M) < 0.1 * M
+    assert rec["ebitda_source"] == "operating income + D&A"
+    assert any("non-operating items" in i and "-730m" in i
+               for i in rec["crosscheck_issues"])
+    assert rec["normalised"]
+
+
+def test_v6_twe_real_pattern_is_amber_not_red():
+    out = score_company(_twe_real())
+    assert abs(out["ebitda_cover_latest"] - 2.06) < 0.01
+    assert out["status"] == "AMBER"
+    assert "-4.7x" not in out["reasons"]
+
+
+def test_v6_unusual_items_not_double_counted_when_below_the_line():
+    rec = _company_with_history(
+        "Industrials", ebit=[-400 * M] * 4, opinc=[100 * M] * 4,
+        da=[50 * M] * 4, interest=[20 * M] * 4, ebitda_yahoo=[np.nan] * 4)
+    rec["history"]["unusual"] = [-500 * M] * 4
+    rec["unusual_items"] = -500 * M
+    rec = normalise(rec)
+    assert rec["ebitda"] == 150 * M          # 100 + 50, the -500 is NOT added back
+
+
+def test_v6_unusual_items_added_back_when_inside_operating_income():
+    rec = _company_with_history(
+        "Industrials", ebit=[-400 * M] * 4, opinc=[-400 * M] * 4,
+        da=[50 * M] * 4, interest=[20 * M] * 4, ebitda_yahoo=[np.nan] * 4)
+    rec["history"]["unusual"] = [-500 * M] * 4
+    rec["unusual_items"] = -500 * M
+    rec = normalise(rec)
+    assert rec["ebitda"] == 150 * M          # -400 + 50 + 500 added back
+
+
+def test_v6_net_cash_switches_cover_off():
+    """IGO-style: earnings mostly below the line, more cash than debt."""
+    rec = _company_with_history(
+        "Basic Materials", ebit=[300 * M] * 4, opinc=[-60 * M] * 4,
+        da=[20 * M] * 4, interest=[8 * M] * 4, ebitda_yahoo=[np.nan] * 4,
+        cash=900 * M, debt=50 * M)
+    out = score_company(rec)
+    assert out["net_cash"] and out["flag_cov"] == "OFF"
+    assert "EBITDA cover" not in out["reasons"]
+
+
+def test_v6_negative_earnings_wording():
+    rec = _company_with_history(
+        "Healthcare", ebit=[-50 * M, 400 * M, 400 * M, 400 * M],
+        opinc=[-50 * M, 400 * M, 400 * M, 400 * M],
+        da=[20 * M] * 4, interest=[30 * M] * 4, ebitda_yahoo=[np.nan] * 4)
+    out = score_company(rec)
+    assert "EBITDA turned negative" in out["reasons"]
+    assert "%" not in out["reasons"].split("earnings falling")[1].split(";")[0]

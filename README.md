@@ -34,29 +34,14 @@ Score specific names only: `python run_monitor.py QAN.AX SGR.AX TAH.AX`
 Note: GitHub pauses scheduled workflows after 60 days with no repo
 activity. The daily commit counts as activity, so it keeps itself alive.
 
-## Second data source (optional, recommended)
+## Data source
 
-The monitor cross-checks Yahoo against Financial Modeling Prep (FMP).
+v6 runs on Yahoo Finance only. The FMP cross-check code is kept in
+`monitor/crosscheck.py` but switched off (`USE_SECOND_SOURCE = False` in
+`config.py`). To switch it back on, set it to True and add an `FMP_API_KEY`
+repository secret plus an `env:` line in the workflow's "Run monitor" step.
 
-1. Get a free API key at financialmodelingprep.com (250 requests a day;
-   the monitor uses 2 per company).
-2. Repo **Settings > Secrets and variables > Actions > New repository
-   secret**. Name: `FMP_API_KEY`, value: your key.
-3. To run locally: `set FMP_API_KEY=yourkey` (Windows) or
-   `export FMP_API_KEY=yourkey` (Mac/Linux) before `python run_monitor.py`.
-
-For each company the `source_check` column shows:
-
-- **OK**: debt, assets, EBIT, EBITDA and interest agree within 10%
-- **MISMATCH**: they disagree; details in `data_issues`. If the company
-  has any red signal, the reasons also say "CHECK DATA"
-- **PERIOD DIFFERS**: the sources hold different financial years
-- **N/A**: no key, or FMP has no data for the ticker
-
-Fields missing from Yahoo are filled from FMP before scoring, and noted.
-Without a key the monitor runs on Yahoo alone.
-
-## How it works (v5 scoring)
+## How it works (v6 scoring)
 
 | Signal | Method | RED | AMBER |
 |---|---|---|---|
@@ -78,11 +63,21 @@ utilities 1.5x / 2.5x.
 - **WATCH**: a single accounting signal amber, or a drawdown on its own
 - **GREEN**: everything else
 
-**How EBITDA is built.** EBITDA is calculated as EBIT plus depreciation and
-amortisation, with unusual items added back, for each of the last 3 to 4
-years. Yahoo's own EBITDA field is only a fallback, because it proved
-unreliable (Treasury Wine showed -508m when EBIT + D&A was +223m). When the
-two differ by more than 10% it is noted in `data_issues`.
+**How EBITDA is built.** EBITDA is operating income plus depreciation and
+amortisation, for each of the last 3 to 4 years. Yahoo's "EBIT" line is not
+used as the base, because it is pre-tax profit plus interest and so includes
+non-operating items such as impairments booked below the operating line.
+Treasury Wine FY26: Yahoo EBIT -673m, operating profit +57.5m. When the two
+differ by more than 10%, `data_issues` shows the gap.
+
+Unusual items are added back only when they sit inside operating income
+(EBIT and operating income agree). When they sit below the line, operating
+income already excludes them, so adding them back would double count.
+
+**Net cash.** When cash exceeds total debt, interest cover is switched OFF:
+tiny interest costs make the ratio swing wildly and it says nothing about
+default risk (e.g. IGO, whose earnings come mainly from an equity-accounted
+joint venture below operating income).
 
 **Through the cycle.** Mining and energy earnings swing with commodity
 prices, so their interest cover is judged on the 3-year average. Averages
@@ -114,6 +109,10 @@ from the watchlist (QUB, taken private in 2026).
   second source to cross-check Yahoo and fill gaps.
 - v5: EBITDA built from EBIT + D&A (fixes the Treasury Wine false RED),
   3-year average cover for cyclicals, and an earnings-trend signal.
+- v6: Yahoo only. Operating income replaces Yahoo EBIT (the real cause of
+  the Treasury Wine false RED), no double counting of below-the-line
+  one-offs, interest cover off for net-cash companies, clearer wording for
+  negative earnings.
 
 Thresholds live in `monitor/config.py`. Treat them as a starting risk
 appetite and recalibrate after backtesting.
@@ -125,7 +124,7 @@ monitor/config.py   watchlist, risk-free rate, thresholds
 monitor/data.py     yfinance fetch, statement field mapping, FX conversion
 monitor/models.py   Merton/KMV, Altman Z'', coverage, RAG logic
 monitor/engine.py   scores one company and the whole watchlist
-monitor/crosscheck.py  FMP second source, cross-check and gap filling
+monitor/crosscheck.py  optional FMP second source (off by default)
 run_monitor.py      CLI run, snapshot history, change detection
 app.py              Streamlit dashboard with drill-down DD history
 tests/              synthetic-data tests (KMV recovers known asset vol and DD)

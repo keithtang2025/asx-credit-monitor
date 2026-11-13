@@ -1,4 +1,4 @@
-"""Runs the models over a company record and the full watchlist (v5 scoring)."""
+"""Runs the models over a company record and the full watchlist (v6 scoring)."""
 from __future__ import annotations
 
 from datetime import date
@@ -106,7 +106,11 @@ def score_company(rec: dict) -> dict:
     f_dd = rag(m["distance_to_default"], *C.THRESHOLDS["distance_to_default"])
     f_z = rag(z, *C.THRESHOLDS["altman_z2"]) if z_on else "OFF"
     cov_thr = coverage_thresholds(rec)
-    f_cov = rag(ebitda_cov, *cov_thr)
+    # v6: with more cash than debt, interest cover is not a credit signal
+    # (tiny interest costs turn small EBITDA swings into extreme ratios).
+    net_cash = (not _nan(rec.get("cash")) and not _nan(rec.get("total_debt"))
+                and rec["cash"] >= rec["total_debt"])
+    f_cov = "OFF" if net_cash else rag(ebitda_cov, *cov_thr)
     f_mkt = "AMBER" if drawdown >= C.DRAWDOWN_ALERT else "GREEN"
 
     # v4: the shared-cause merge only applies when the ratios could NOT be
@@ -126,7 +130,10 @@ def score_company(rec: dict) -> dict:
     if f_cov in ("RED", "AMBER"):
         reasons.append(f"EBITDA cover {ebitda_cov:.1f}x {cov_basis} ({f_cov})")
     if f_trend == "AMBER":
-        reasons.append(f"earnings falling: EBITDA {trend:.0%} of 3y avg")
+        if rec["ebitda"] <= 0:
+            reasons.append("earnings falling: EBITDA turned negative (3y avg positive)")
+        else:
+            reasons.append(f"earnings falling: EBITDA {trend:.0%} of 3y avg")
     if f_mkt == "AMBER":
         reasons.append(f"drawdown {drawdown:.0%}")
     if one_off:
@@ -157,6 +164,7 @@ def score_company(rec: dict) -> dict:
         "earnings_vs_3y": trend,
         "flag_trend": f_trend,
         "cyclical": cyclical,
+        "net_cash": net_cash,
         "ebitda_m": rec["ebitda"] / 1e6 if not _nan(rec["ebitda"]) else np.nan,
         "ebitda_3y_m": ebitda_3y / 1e6 if not _nan(ebitda_3y) else np.nan,
         "ebitda_source": rec.get("ebitda_source", ""),

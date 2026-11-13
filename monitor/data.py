@@ -90,7 +90,8 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
         "working_capital": g(bs, ["Working Capital"]),
         "retained_earnings": g(bs, ["Retained Earnings"]),
         "book_equity": g(bs, ["Stockholders Equity", "Common Stock Equity"]),
-        "ebit_reported": g(inc, ["EBIT", "Operating Income"]),
+        "ebit_reported": g(inc, ["EBIT"]),
+        "operating_income": g(inc, ["Operating Income", "Total Operating Income As Reported"]),
         "ebitda_reported": g(inc, ["EBITDA"]),
         "ebitda_normalized_yahoo": g(inc, ["Normalized EBITDA"]),
         "unusual_items": g(inc, ["Total Unusual Items", "Total Unusual Items Excluding Goodwill"]),
@@ -104,7 +105,8 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
     if all(np.isnan(da)):
         da = h(cf, ["Depreciation And Amortization", "Depreciation Amortization Depletion"])
     rec["history"] = {
-        "ebit": h(inc, ["EBIT", "Operating Income"]),
+        "ebit": h(inc, ["EBIT"]),
+        "opinc": h(inc, ["Operating Income", "Total Operating Income As Reported"]),
         "da": da,
         "unusual": h(inc, ["Total Unusual Items", "Total Unusual Items Excluding Goodwill"]),
         "interest": h(inc, ["Interest Expense", "Interest Expense Non Operating"]),
@@ -113,8 +115,9 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
     }
 
     # Second source: cross-check and fill gaps BEFORE normalising
+    from .config import USE_SECOND_SOURCE
     from .crosscheck import compare_and_fill, fetch_fmp
-    fmp = fetch_fmp(ticker)
+    fmp = fetch_fmp(ticker) if USE_SECOND_SOURCE else None
     fmp_fx = fx_rate(fmp.get("currency"), px_ccy) if fmp and fmp.get("currency") else fx
     compare_and_fill(rec, fmp, fmp_fx)
 
@@ -125,42 +128,67 @@ def _nan(x) -> bool:
     return x is None or (isinstance(x, float) and np.isnan(x))
 
 
-def _year_ebitda(ebit, da, unusual, yahoo_norm, yahoo_rep):
-    """Normalised EBITDA for one year and where it came from.
+def _gap(a, b, tol) -> bool:
+    """True when a and b differ by more than tol (relative) and 5m (absolute)."""
+    if _nan(a) or _nan(b):
+        return False
+    d = abs(a - b)
+    return d > 5e6 and d > tol * max(abs(a), abs(b))
 
-    Preferred: EBIT + D&A with unusual items added back. Yahoo's own EBITDA
-    fields are fallbacks because they proved unreliable (e.g. TWE, CSL).
-    Yahoo reports unusual items with their P&L sign (losses negative), so
-    subtracting them adds back impairments and restructuring charges.
+
+def _year_ebitda(opinc, ebit, da, unusual, yahoo_norm, yahoo_rep, tol=0.10):
+    """Normalised EBITDA for one year, where it came from, and whether
+    one-offs sit below the operating line.
+
+    Base is OPERATING INCOME, not Yahoo's "EBIT". Yahoo's EBIT is pre-tax
+    profit plus interest, so it includes non-operating items such as large
+    impairments booked below the operating line (Treasury Wine FY26: EBIT
+    -673m vs operating profit +57.5m).
+
+    Unusual items are added back only when they sit inside operating income
+    (EBIT and operating income agree). When EBIT differs, the one-offs are
+    below the line and operating income already excludes them, so adding
+    them back would double count.
+    Yahoo reports unusual items with their P&L sign (losses negative).
     """
-    adj = 0.0 if _nan(unusual) else unusual
-    if not _nan(ebit) and not _nan(da):
-        return ebit + abs(da) - adj, "EBIT + D&A"
+    base = opinc if not _nan(opinc) else ebit
+    below_line = _gap(ebit, opinc, tol)
+    adj = 0.0 if (below_line or _nan(unusual)) else unusual
+    if not _nan(base) and not _nan(da):
+        src = "operating income + D&A" if not _nan(opinc) else "EBIT + D&A"
+        return base + abs(da) - adj, src, below_line, adj
     if not _nan(yahoo_norm):
-        return yahoo_norm, "Yahoo normalized EBITDA"
+        return yahoo_norm, "Yahoo normalized EBITDA", below_line, adj
     if not _nan(yahoo_rep):
-        return yahoo_rep - adj, "Yahoo EBITDA"
-    return np.nan, "missing"
+        return yahoo_rep - adj, "Yahoo EBITDA", below_line, adj
+    return np.nan, "missing", below_line, adj
 
 
 def normalise(rec: dict) -> dict:
-    """Latest and 3-year normalised EBIT/EBITDA, plus a source check on EBITDA."""
-    from .config import EBITDA_FIELD_TOLERANCE, MIN_YEARS_FOR_AVERAGE
+    """Latest and 3-year normalised EBIT/EBITDA from operating income."""
+    from .config import EBIT_GAP_TOLERANCE, MIN_YEARS_FOR_AVERAGE
 
     unusual = rec.get("unusual_items", np.nan)
     ebit_rep = rec.get("ebit_reported", np.nan)
+    opinc = rec.get("operating_income", np.nan)
     hist = rec.get("history")
+    issues = rec.setdefault("crosscheck_issues", [])
 
     if hist:
-        # Latest year uses the (possibly FMP-filled) headline fields
-        hist["ebit"][0] = ebit_rep if not _nan(ebit_rep) else hist["ebit"][0]
-        years = [_year_ebitda(hist["ebit"][i], hist["da"][i], hist["unusual"][i],
-                              hist["ebitda_norm_yahoo"][i], hist["ebitda_yahoo"][i])
-                 for i in range(len(hist["ebit"]))]
-        ebitda_years = [v for v, _ in years]
-        rec["ebitda"], rec["ebitda_source"] = years[0]
+        n = len(hist["ebit"])
+        hist.setdefault("opinc", [np.nan] * n)
+        if not _nan(ebit_rep):
+            hist["ebit"][0] = ebit_rep
+        if not _nan(opinc):
+            hist["opinc"][0] = opinc
+        years = [_year_ebitda(hist["opinc"][i], hist["ebit"][i], hist["da"][i],
+                              hist["unusual"][i], hist["ebitda_norm_yahoo"][i],
+                              hist["ebitda_yahoo"][i], EBIT_GAP_TOLERANCE)
+                 for i in range(n)]
+        ebitda_years = [y[0] for y in years]
+        rec["ebitda"], rec["ebitda_source"], below_line, adj = years[0]
         if _nan(rec["ebitda"]) and not _nan(rec.get("ebitda_reported", np.nan)):
-            rec["ebitda"], rec["ebitda_source"] = rec["ebitda_reported"], "FMP/Yahoo EBITDA"
+            rec["ebitda"], rec["ebitda_source"] = rec["ebitda_reported"], "Yahoo EBITDA"
 
         last3 = [v for v in ebitda_years[:3] if not _nan(v)]
         ints = [abs(v) for v in hist["interest"][:3] if not _nan(v)]
@@ -168,27 +196,26 @@ def normalise(rec: dict) -> dict:
         rec["ebitda_3y"] = float(np.mean(last3)) if enough else np.nan
         rec["interest_3y"] = float(np.mean(ints)) if enough else np.nan
         rec["ebitda_history"] = ebitda_years
-
-        # Source check: Yahoo's EBITDA field vs our EBIT + D&A build
-        y = hist["ebitda_yahoo"][0]
-        built_raw = (hist["ebit"][0] + abs(hist["da"][0])
-                     if not _nan(hist["ebit"][0]) and not _nan(hist["da"][0]) else np.nan)
-        if not _nan(y) and not _nan(built_raw):
-            diff = abs(y - built_raw)
-            if diff > 5e6 and diff > EBITDA_FIELD_TOLERANCE * max(abs(y), abs(built_raw)):
-                rec.setdefault("crosscheck_issues", []).append(
-                    f"Yahoo EBITDA field {y / 1e6:,.0f}m differs from EBIT + D&A "
-                    f"{built_raw / 1e6:,.0f}m; used EBIT + D&A")
+        op0, ebit0 = hist["opinc"][0], hist["ebit"][0]
     else:
+        op0, ebit0 = opinc, ebit_rep
+        below_line = _gap(ebit0, op0, EBIT_GAP_TOLERANCE)
+        adj = 0.0 if (below_line or _nan(unusual)) else unusual
         ebitda_norm = rec.get("ebitda_normalized_yahoo", np.nan)
         if _nan(ebitda_norm):
             ebitda_rep = rec.get("ebitda_reported", np.nan)
-            ebitda_norm = ebitda_rep - unusual if not _nan(unusual) else ebitda_rep
-        rec["ebitda"], rec["ebitda_source"] = ebitda_norm, "Yahoo/FMP EBITDA"
+            ebitda_norm = ebitda_rep - adj if not _nan(ebitda_rep) else np.nan
+        rec["ebitda"], rec["ebitda_source"] = ebitda_norm, "Yahoo EBITDA"
         rec["ebitda_3y"] = rec["interest_3y"] = np.nan
 
-    rec["ebit"] = ebit_rep - unusual if not _nan(unusual) else ebit_rep
-    # True when the ratios really are one-off adjusted
-    rec["normalised"] = (not _nan(unusual)
-                         or not _nan(rec.get("ebitda_normalized_yahoo", np.nan)))
+    if below_line:
+        issues.append(f"Yahoo EBIT {ebit0 / 1e6:,.0f}m includes "
+                      f"{(ebit0 - op0) / 1e6:,.0f}m of non-operating items; "
+                      f"used operating income {op0 / 1e6:,.0f}m")
+
+    base = op0 if not _nan(op0) else ebit0
+    rec["ebit"] = base - adj if not _nan(base) else np.nan
+    # Ratios count as one-off adjusted when unusual items were added back, or
+    # when operating income already excludes one-offs sitting below the line.
+    rec["normalised"] = bool(below_line or (not _nan(unusual) and adj != 0.0))
     return rec

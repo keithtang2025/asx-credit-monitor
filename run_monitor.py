@@ -54,7 +54,7 @@ def main():
 
     print("\n=== Watchlist status ===")
     print(df["status"].value_counts().to_string())
-    if "source_check" in df:
+    if "source_check" in df and (df["source_check"] != "N/A").any():
         print("\n=== Data source cross-check (Yahoo vs FMP) ===")
         print(df["source_check"].value_counts().to_string())
     alerts = df[df["status"].isin(["RED", "AMBER"])]

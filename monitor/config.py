@@ -57,6 +57,15 @@ RED_SIGNALS_NEEDED = 2
 # interest cover count as ONE signal, because they share the same cause.
 ONE_OFF_SHARE = 0.25
 
+# --- v6: data sources ---
+# Second source (FMP) for cross-checking. Off: the monitor runs on Yahoo only.
+# Set True and add an FMP_API_KEY secret to switch it back on.
+USE_SECOND_SOURCE = False
+
+# Operating income vs Yahoo "EBIT": a gap larger than this (and > 5m) means
+# EBIT contains non-operating items such as impairments below the line.
+EBIT_GAP_TOLERANCE = 0.10
+
 # --- v5: earnings through the cycle ---
 # Sectors where interest cover is judged on the 3-year average EBITDA, so a
 # single commodity downturn year does not trigger alerts by itself.

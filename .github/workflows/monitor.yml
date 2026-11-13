@@ -28,8 +28,6 @@ jobs:
         run: python -m pytest -q
 
       - name: Run monitor
-        env:
-          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}   # optional second data source
         run: |
           mkdir -p data
           python run_monitor.py | tee data/last_run_log.txt

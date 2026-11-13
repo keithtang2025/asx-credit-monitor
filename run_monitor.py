@@ -59,6 +59,10 @@ def main():
         print("\n=== Alerts ===")
         print(alerts[["ticker", "name", "status", "distance_to_default", "pd_1y",
                       "reasons"]].to_string(index=False, float_format="%.3f"))
+    dq = df[df["data_issues"].astype(str).str.len() > 0]
+    if len(dq):
+        print("\n=== Data quality checks (verify against annual reports) ===")
+        print(dq[["ticker", "data_issues"]].to_string(index=False))
     if len(changes):
         print("\n=== Changes since last run ===")
         print(changes.to_string(index=False, float_format="%.2f"))

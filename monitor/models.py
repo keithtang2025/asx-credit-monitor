@@ -120,6 +120,7 @@ def rag(value, red, amber) -> str:
 
 
 def overall_status(flags: list[str]) -> str:
+    """v1 rule: any RED makes the company RED. Kept for comparison."""
     if "RED" in flags:
         return "RED"
     if "AMBER" in flags:
@@ -127,3 +128,24 @@ def overall_status(flags: list[str]) -> str:
     if all(f == "N/A" for f in flags):
         return "N/A"
     return "GREEN"
+
+
+def status_v2(flag_dd: str, signal_flags: list[str], flag_mkt: str,
+              red_needed: int = 2) -> str:
+    """v2 rule: distance to default leads; accounting signals need to agree.
+
+    signal_flags should include flag_dd plus the accounting flags.
+    """
+    n_red = sum(f == "RED" for f in signal_flags)
+    if flag_dd == "RED" or n_red >= red_needed:
+        return "RED"
+    if n_red == 1 or "AMBER" in signal_flags or flag_mkt == "AMBER":
+        return "AMBER"
+    if all(f in ("N/A", "OFF") for f in signal_flags):
+        return "N/A"
+    return "GREEN"
+
+
+def coverage(numerator, interest_expense) -> float:
+    """Generic coverage ratio (EBIT or EBITDA over interest)."""
+    return interest_coverage(numerator, interest_expense)

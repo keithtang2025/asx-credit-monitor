@@ -55,6 +55,7 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
         "ticker": ticker,
         "name": info.get("shortName", ticker),
         "sector": info.get("sector", "Unknown"),
+        "industry": info.get("industry", ""),
         "currency": px_ccy,
         "statement_currency": fin_ccy,
         "prices": prices,

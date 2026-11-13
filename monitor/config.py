@@ -31,9 +31,29 @@ VOL_WINDOW = 252
 # Alert thresholds: (red, amber). A metric below red is RED, below amber is AMBER.
 THRESHOLDS = {
     "distance_to_default": (2.0, 3.5),
-    "altman_z2": (1.1, 2.6),          # Altman Z'' distress / grey zone cut-offs
-    "interest_coverage": (1.5, 3.0),  # EBIT / interest expense
+    "altman_z2": (1.1, 2.6),           # Altman Z'' distress / grey zone cut-offs
+    "ebitda_coverage": (2.0, 4.0),     # EBITDA / interest expense (primary)
 }
+
+# Status rule (v2):
+#   RED   = DD below its red line, OR at least RED_SIGNALS_NEEDED signals RED
+#   AMBER = any single signal RED or AMBER, or the drawdown flag
+#   GREEN = otherwise
+RED_SIGNALS_NEEDED = 2
+
+# Altman Z'' is switched off for business models it misreads:
+# customer-funded working capital, concession/regulated assets, property trusts.
+# Matched case-insensitively against the Yahoo "industry" and "sector" text.
+Z_EXCLUDE_KEYWORDS = [
+    "grocery", "discount stores", "airline", "travel", "infrastructure",
+    "toll", "midstream", "utilities", "reit", "real estate",
+]
+# Ticker-level overrides (in case Yahoo's industry label misses one)
+Z_EXCLUDE_TICKERS = {"WOW.AX", "COL.AX", "QAN.AX", "FLT.AX", "WEB.AX", "TCL.AX",
+                     "APA.AX", "AZJ.AX", "QUB.AX", "AGL.AX", "ORG.AX", "SGP.AX"}
+
+# Balance sheets older than this are flagged as stale (days)
+STALE_STATEMENT_DAYS = 456   # about 15 months
 
 # Drawdown from 52-week high that triggers an AMBER market-stress flag
 DRAWDOWN_ALERT = 0.40

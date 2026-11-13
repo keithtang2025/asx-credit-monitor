@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from monitor.engine import run_watchlist
-from monitor.models import _bs_equity, altman_z2, merton_kmv, rag
+from monitor.engine import run_watchlist, score_company, z_applies
+from monitor.models import _bs_equity, altman_z2, merton_kmv, rag, status_v2
 
 
 def simulate_equity(V0, D, sigma_v, r=0.04, T=1.0, n=252, seed=0):
@@ -53,7 +53,8 @@ def test_engine_end_to_end_with_fake_fetch():
     def fake(tk):
         D = {"SAFE.AX": 10.0, "RISKY.AX": 90.0}[tk]
         E, _ = simulate_equity(100, D, 0.35, seed=1)
-        return {"ticker": tk, "name": tk, "sector": "Test", "prices": E / 10,
+        return {"ticker": tk, "name": tk, "sector": "Test", "industry": "Widgets",
+                "prices": E / 10,
                 "market_cap_series": E, "short_term_debt": D, "long_term_debt": 0.0,
                 "total_debt": D, "cash": 1.0, "total_assets": 100.0,
                 "total_liabilities": D, "working_capital": 5.0, "retained_earnings": 5.0,
@@ -64,4 +65,39 @@ def test_engine_end_to_end_with_fake_fetch():
     assert df.iloc[0]["ticker"] == "RISKY.AX"  # worst sorted first
     assert df.set_index("ticker").loc["RISKY.AX", "status"] == "RED"
     safe = df.set_index("ticker").loc["SAFE.AX"]
-    assert safe["flag_dd"] == "GREEN" and safe["flag_icr"] == "GREEN"
+    assert safe["flag_dd"] == "GREEN" and safe["flag_cov"] == "GREEN"
+
+
+def test_status_v2_rules():
+    # One weak accounting ratio alone is only AMBER
+    assert status_v2("GREEN", ["GREEN", "RED", "GREEN"], "GREEN") == "AMBER"
+    # Two independent reds escalate to RED
+    assert status_v2("GREEN", ["GREEN", "RED", "RED"], "GREEN") == "RED"
+    # DD red on its own is RED
+    assert status_v2("RED", ["RED", "GREEN", "GREEN"], "GREEN") == "RED"
+    # Switched-off Z'' does not count
+    assert status_v2("GREEN", ["GREEN", "OFF", "GREEN"], "GREEN") == "GREEN"
+    assert status_v2("GREEN", ["GREEN", "OFF", "GREEN"], "AMBER") == "AMBER"
+
+
+def test_z_switched_off_for_supermarkets_and_toll_roads():
+    assert not z_applies({"ticker": "XYZ.AX", "industry": "Grocery Stores", "sector": ""})
+    assert not z_applies({"ticker": "TCL.AX", "industry": "", "sector": ""})
+    assert z_applies({"ticker": "BSL.AX", "industry": "Steel", "sector": "Basic Materials"})
+
+
+def test_one_off_ebit_flag_and_data_issues():
+    E, _ = simulate_equity(100, 10, 0.25, seed=3)
+    rec = {"ticker": "ONE.AX", "name": "One", "sector": "Healthcare", "industry": "Biotech",
+           "prices": E / 10, "market_cap_series": E, "short_term_debt": 5.0,
+           "long_term_debt": 10.0, "total_debt": 15.0, "cash": 3.0, "total_assets": 120.0,
+           "total_liabilities": 40.0, "working_capital": 10.0, "book_equity": 80.0,
+           "retained_earnings": float("nan"), "ebit": -8.0, "ebitda": 25.0,
+           "interest_expense": 2.0, "statement_date": "2020-06-30",
+           "statement_currency": "USD"}
+    out = score_company(rec)
+    assert "likely one-offs" in out["reasons"]
+    assert out["flag_cov"] == "GREEN"          # 12.5x EBITDA cover
+    assert "retained_earnings" in out["data_issues"]
+    assert "months old" in out["data_issues"]
+    assert "converted from USD" in out["data_issues"]

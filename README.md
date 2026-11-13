@@ -19,14 +19,50 @@ streamlit run app.py            # dashboard
 
 Score specific names only: `python run_monitor.py QAN.AX SGR.AX TAH.AX`
 
-## How it works
+## Running on GitHub
+
+1. Create a new repo on GitHub and upload this folder (including the
+   hidden `.github` folder).
+2. Actions tab: enable workflows, open "Daily credit monitor", click
+   "Run workflow" to test. The results summary appears on the run page and
+   `data/latest.csv` and `data/history.csv` are committed back.
+3. It then runs automatically at 07:00 UTC on weekdays.
+4. Dashboard: sign in at share.streamlit.io with GitHub, choose the repo,
+   main file `app.py`. It reads the committed `data/latest.csv`, so the
+   page stays up to date after every Action run.
+
+Note: GitHub pauses scheduled workflows after 60 days with no repo
+activity. The daily commit counts as activity, so it keeps itself alive.
+
+## How it works (v2 scoring)
 
 | Signal | Method | RED | AMBER |
 |---|---|---|---|
-| Distance to default | KMV iteration on 1 year of daily market cap; default point = ST debt + 0.5 x LT debt; risk-neutral drift | < 2.0 | < 3.5 |
-| Altman Z'' | 6.56 WC/TA + 3.26 RE/TA + 6.72 EBIT/TA + 1.05 BE/TL | < 1.1 | < 2.6 |
-| Interest coverage | EBIT / interest expense | < 1.5x | < 3.0x |
+| Distance to default (lead signal) | KMV iteration on 1 year of daily market cap; default point = ST debt + 0.5 x LT debt; risk-neutral drift | < 2.0 | < 3.5 |
+| Altman Z'' (sector-aware) | 6.56 WC/TA + 3.26 RE/TA + 6.72 EBIT/TA + 1.05 BE/TL; switched OFF for supermarkets, airlines, travel, infrastructure, utilities and property | < 1.1 | < 2.6 |
+| EBITDA interest cover | EBITDA / interest expense (EBIT cover shown for reference) | < 2.0x | < 4.0x |
 | Market stress | Drawdown from 52-week high | | >= 40% |
+
+**Status rule**
+
+- **RED**: distance to default below 2.0, or at least two signals RED at once
+- **AMBER**: any single signal RED or AMBER, or the drawdown flag
+- **GREEN**: everything else
+
+**Extra flags**
+
+- "EBIT negative, likely one-offs" when EBIT is negative but EBITDA is
+  positive (impairments, restructuring, discontinued operations).
+- A `data_issues` column lists missing fields, statements older than about
+  15 months, and currency conversion. These describe data quality, not risk.
+
+**Why v2.** The first version made a company RED if any single ratio was
+red, which flagged around a third of the watchlist. Most were false
+positives: Altman Z'' misreads customer-funded working capital
+(supermarkets, airlines, travel) and concession assets (toll roads,
+pipelines), and EBIT-based cover was distorted by one-off write-downs.
+v2 leads with the market signal and needs independent signals to agree
+before escalating.
 
 Thresholds live in `monitor/config.py`. Treat them as a starting risk
 appetite and recalibrate after backtesting.

@@ -57,17 +57,21 @@ Running ASX credit monitor...
 status
 GREEN    35
 WATCH    11
-AMBER     6
-RED       1
+AMBER     5
+RED       2
+
+=== Data source cross-check (Yahoo vs FMP) ===
+source_check
+N/A    53
 
 === Alerts ===
 ticker                     name status  distance_to_default  pd_1y                                                                                               reasons
+SGR.AX       STAR ENT FPO [SGR]    RED                2.562  0.005 DD 2.56 (AMBER); Z'' -4.46 (RED); EBITDA cover -1.2x (RED); one-off items -1,439m (ratios normalised)
 TWE.AX      TREA WINE FPO [TWE]    RED                5.353  0.000                                                              Z'' 0.35 (RED); EBITDA cover -4.7x (RED)
 NXT.AX         NEXTDC FPO [NXT]  AMBER                2.350  0.009                                                                     DD 2.35 (AMBER); Z'' 1.91 (AMBER)
-SGR.AX       STAR ENT FPO [SGR]  AMBER                2.562  0.005 DD 2.56 (AMBER); Z'' -4.46 (RED); EBITDA cover -1.2x (RED); one-off items -1,439m (ratios normalised)
 LLC.AX LEND LEASE STAPLED [LLC]  AMBER                2.719  0.003       DD 2.72 (AMBER); EBITDA cover 0.1x (RED); drawdown 57%; one-off items -351m (ratios normalised)
-WTC.AX       WISETECH FPO [WTC]  AMBER                3.789  0.000                                                           Z'' 1.95 (AMBER); EBITDA cover 2.9x (AMBER)
-NIC.AX     NICKLINDUS FPO [NIC]  AMBER                3.840  0.000                                               Z'' 2.20 (AMBER); EBITDA cover 1.8x (RED); drawdown 42%
+WTC.AX       WISETECH FPO [WTC]  AMBER                3.788  0.000                                                           Z'' 1.95 (AMBER); EBITDA cover 2.9x (AMBER)
+NIC.AX     NICKLINDUS FPO [NIC]  AMBER                3.839  0.000                                               Z'' 2.20 (AMBER); EBITDA cover 1.8x (RED); drawdown 42%
 RHC.AX         RAMSAY FPO [RHC]  AMBER                6.331  0.000                                                                                        Z'' 0.89 (RED)
 
 === Watch list (single soft signal) ===

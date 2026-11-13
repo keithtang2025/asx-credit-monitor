@@ -28,13 +28,12 @@ Running ASX credit monitor...
   ok   TCL.AX
   ok   APA.AX
   ok   AZJ.AX
-  skip QUB.AX: No price history for QUB.AX
   ok   BXB.AX
   ok   AMC.AX
   ok   ORA.AX
   ok   JHX.AX
   ok   BSL.AX
-  skip SVW.AX: No price history for SVW.AX
+  ok   SGH.AX
   ok   LLC.AX
   ok   AGL.AX
   ok   ORG.AX
@@ -56,37 +55,34 @@ Running ASX credit monitor...
 
 === Watchlist status ===
 status
-GREEN    27
-AMBER    23
-RED       2
+GREEN    35
+WATCH    11
+AMBER     6
+RED       1
 
 === Alerts ===
-ticker                     name status  distance_to_default  pd_1y                                                     reasons
-SGR.AX       STAR ENT FPO [SGR]    RED                2.562  0.005 DD 2.56 (AMBER); Z'' -10.08 (RED); EBITDA cover -1.2x (RED)
-TWE.AX      TREA WINE FPO [TWE]    RED                5.353  0.000                    Z'' 0.35 (RED); EBITDA cover -4.7x (RED)
-NXT.AX         NEXTDC FPO [NXT]  AMBER                2.350  0.009                           DD 2.35 (AMBER); Z'' 1.91 (AMBER)
-LLC.AX LEND LEASE STAPLED [LLC]  AMBER                2.719  0.003     DD 2.72 (AMBER); EBITDA cover -1.2x (RED); drawdown 57%
-WTC.AX       WISETECH FPO [WTC]  AMBER                3.788  0.000                 Z'' 1.95 (AMBER); EBITDA cover 2.9x (AMBER)
-NIC.AX     NICKLINDUS FPO [NIC]  AMBER                3.840  0.000     Z'' 2.19 (AMBER); EBITDA cover 1.8x (RED); drawdown 42%
-TAH.AX        TABCORP FPO [TAH]  AMBER                4.015  0.000                                              Z'' 0.00 (RED)
-PLS.AX       PLSGROUP FPO [PLS]  AMBER                4.734  0.000                                                drawdown 58%
-ORA.AX          ORORA FPO [ORA]  AMBER                4.975  0.000                  Z'' 1.92 (AMBER); EBITDA cover -7.0x (RED)
-XRO.AX           XERO FPO [XRO]  AMBER                5.179  0.000                                            Z'' 2.13 (AMBER)
-JHX.AX   J HARDIE CDI 1:1 [JHX]  AMBER                5.740  0.000                                            Z'' 1.90 (AMBER)
-RHC.AX         RAMSAY FPO [RHC]  AMBER                6.331  0.000                                              Z'' 0.88 (RED)
-AMC.AX  AMCOR PLC CDI 1:1 [AMC]  AMBER                6.746  0.000                                            Z'' 1.22 (AMBER)
-SHL.AX     SONIC HLTH FPO [SHL]  AMBER                6.866  0.000                                            Z'' 2.13 (AMBER)
-WDS.AX       WOODSIDE FPO [WDS]  AMBER                7.145  0.000                                            Z'' 2.17 (AMBER)
-CSL.AX            CSL FPO [CSL]  AMBER                7.506  0.000                                    EBITDA cover -7.0x (RED)
-LYC.AX          LYNAS FPO [LYC]  AMBER                7.691  0.000                                                drawdown 40%
-STO.AX         SANTOS FPO [STO]  AMBER                7.917  0.000                                            Z'' 1.73 (AMBER)
-DXS.AX      DEXUS STAPLED [DXS]  AMBER                8.014  0.000                                   EBITDA cover 3.2x (AMBER)
-SCG.AX    SCENTRE STAPLED [SCG]  AMBER                8.238  0.000                                   EBITDA cover 3.9x (AMBER)
-APA.AX  APA GROUP STAPLED [APA]  AMBER               10.074  0.000                                   EBITDA cover 3.1x (AMBER)
-IGO.AX     IGOLIMITED FPO [IGO]  AMBER               10.269  0.000                                                drawdown 48%
-TCL.AX TRANSURBAN STAPLED [TCL]  AMBER               12.427  0.000                                   EBITDA cover 2.5x (AMBER)
-WES.AX      WESFARMER FPO [WES]  AMBER               13.317  0.000                                            Z'' 1.82 (AMBER)
-TLS.AX        TELSTRA FPO [TLS]  AMBER               14.021  0.000                                            Z'' 1.15 (AMBER)
+ticker                     name status  distance_to_default  pd_1y                                                                                               reasons
+TWE.AX      TREA WINE FPO [TWE]    RED                5.353  0.000                                                              Z'' 0.35 (RED); EBITDA cover -4.7x (RED)
+NXT.AX         NEXTDC FPO [NXT]  AMBER                2.350  0.009                                                                     DD 2.35 (AMBER); Z'' 1.91 (AMBER)
+SGR.AX       STAR ENT FPO [SGR]  AMBER                2.562  0.005 DD 2.56 (AMBER); Z'' -4.46 (RED); EBITDA cover -1.2x (RED); one-off items -1,439m (ratios normalised)
+LLC.AX LEND LEASE STAPLED [LLC]  AMBER                2.719  0.003       DD 2.72 (AMBER); EBITDA cover 0.1x (RED); drawdown 57%; one-off items -351m (ratios normalised)
+WTC.AX       WISETECH FPO [WTC]  AMBER                3.789  0.000                                                           Z'' 1.95 (AMBER); EBITDA cover 2.9x (AMBER)
+NIC.AX     NICKLINDUS FPO [NIC]  AMBER                3.840  0.000                                               Z'' 2.20 (AMBER); EBITDA cover 1.8x (RED); drawdown 42%
+RHC.AX         RAMSAY FPO [RHC]  AMBER                6.331  0.000                                                                                        Z'' 0.89 (RED)
+
+=== Watch list (single soft signal) ===
+ticker                    name  distance_to_default          reasons
+PLS.AX      PLSGROUP FPO [PLS]                 4.73     drawdown 58%
+XRO.AX          XERO FPO [XRO]                 5.18 Z'' 2.13 (AMBER)
+JHX.AX  J HARDIE CDI 1:1 [JHX]                 5.74 Z'' 2.04 (AMBER)
+AMC.AX AMCOR PLC CDI 1:1 [AMC]                 6.75 Z'' 1.27 (AMBER)
+SHL.AX    SONIC HLTH FPO [SHL]                 6.87 Z'' 2.17 (AMBER)
+WDS.AX      WOODSIDE FPO [WDS]                 7.15 Z'' 2.19 (AMBER)
+LYC.AX         LYNAS FPO [LYC]                 7.69     drawdown 40%
+STO.AX        SANTOS FPO [STO]                 7.92 Z'' 1.76 (AMBER)
+IGO.AX    IGOLIMITED FPO [IGO]                10.27     drawdown 48%
+WES.AX     WESFARMER FPO [WES]                13.32 Z'' 1.82 (AMBER)
+TLS.AX       TELSTRA FPO [TLS]                14.02 Z'' 1.18 (AMBER)
 
 === Data quality checks (verify against annual reports) ===
 ticker        data_issues
@@ -96,16 +92,14 @@ XRO.AX converted from NZD
 JHX.AX converted from USD
 AMC.AX converted from USD
 WDS.AX converted from USD
-CSL.AX converted from USD
 STO.AX converted from USD
 RIO.AX converted from USD
 S32.AX converted from USD
+CSL.AX converted from USD
 FMG.AX converted from USD
 BXB.AX converted from USD
 BHP.AX converted from USD
 RMD.AX converted from USD
 A2M.AX converted from NZD
-
-Skipped 2 tickers (see messages above).
 
 Saved /home/runner/work/asx-credit-monitor/asx-credit-monitor/data/latest.csv and appended to /home/runner/work/asx-credit-monitor/asx-credit-monitor/data/history.csv

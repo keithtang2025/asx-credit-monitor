@@ -1,4 +1,4 @@
-"""Runs the models over a company record and the full watchlist (v3 scoring)."""
+"""Runs the models over a company record and the full watchlist (v4 scoring)."""
 from __future__ import annotations
 
 from datetime import date
@@ -52,6 +52,7 @@ def data_quality(rec: dict, z_on: bool) -> list[str]:
         issues.append("no statement date")
     if rec.get("statement_currency") not in (None, "AUD"):
         issues.append(f"converted from {rec['statement_currency']}")
+    issues.extend(rec.get("crosscheck_issues", []))
     return issues
 
 
@@ -91,7 +92,12 @@ def score_company(rec: dict) -> dict:
     f_cov = rag(ebitda_cov, *cov_thr)
     f_mkt = "AMBER" if drawdown >= C.DRAWDOWN_ALERT else "GREEN"
 
-    status, n_red = status_v3(f_dd, f_z, f_cov, f_mkt, shared_cause=one_off,
+    # v4: the shared-cause merge only applies when the ratios could NOT be
+    # cleaned of one-offs. If they were cleaned and are still red, the
+    # weakness is underlying and the two signals are independent.
+    normalised = rec.get("normalised", False)
+    shared_cause = one_off and not normalised
+    status, n_red = status_v3(f_dd, f_z, f_cov, f_mkt, shared_cause=shared_cause,
                               red_needed=C.RED_SIGNALS_NEEDED)
 
     reasons = []
@@ -105,7 +111,12 @@ def score_company(rec: dict) -> dict:
         reasons.append(f"drawdown {drawdown:.0%}")
     if one_off:
         u = f"{unusual / 1e6:,.0f}m" if not _nan(unusual) else "n/a"
-        reasons.append(f"one-off items {u} (ratios normalised)")
+        if normalised:
+            reasons.append(f"one-off items {u} (ratios normalised)")
+        else:
+            reasons.append("one-offs suspected but not adjustable (signals merged)")
+    if rec.get("source_check") == "MISMATCH" and n_red > 0:
+        reasons.append("CHECK DATA: sources disagree")
 
     dq = data_quality(rec, z_on)
 
@@ -123,6 +134,8 @@ def score_company(rec: dict) -> dict:
         "coverage_red_line": cov_thr[0],
         "ebit_coverage": ebit_cov,
         "one_off_affected": one_off,
+        "normalised": normalised,
+        "source_check": rec.get("source_check", "N/A"),
         "unusual_items_m": unusual / 1e6 if not _nan(unusual) else np.nan,
         "net_debt_ebitda": lev,
         "drawdown_52w": drawdown,

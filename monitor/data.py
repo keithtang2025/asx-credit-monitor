@@ -55,17 +55,7 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
     g = lambda df, names: _first(df, names) * fx
     shares = info.get("sharesOutstanding") or g(bs, ["Ordinary Shares Number", "Share Issued"]) / fx
 
-    ebit_rep = g(inc, ["EBIT", "Operating Income"])
-    ebitda_rep = g(inc, ["EBITDA"])
-    unusual = g(inc, ["Total Unusual Items", "Total Unusual Items Excluding Goodwill"])
-    ebitda_norm = g(inc, ["Normalized EBITDA"])
-    if np.isnan(ebitda_norm):
-        ebitda_norm = ebitda_rep - unusual if not np.isnan(unusual) else ebitda_rep
-    # Yahoo reports unusual items with their P&L sign (losses negative),
-    # so subtracting them adds back impairments and restructuring charges.
-    ebit_norm = ebit_rep - unusual if not np.isnan(unusual) else ebit_rep
-
-    return {
+    rec = {
         "ticker": ticker,
         "requested_ticker": requested,
         "name": info.get("shortName", ticker),
@@ -86,11 +76,37 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
         "working_capital": g(bs, ["Working Capital"]),
         "retained_earnings": g(bs, ["Retained Earnings"]),
         "book_equity": g(bs, ["Stockholders Equity", "Common Stock Equity"]),
-        "ebit": ebit_norm,
-        "ebitda": ebitda_norm,
-        "ebit_reported": ebit_rep,
-        "ebitda_reported": ebitda_rep,
-        "unusual_items": unusual,
+        "ebit_reported": g(inc, ["EBIT", "Operating Income"]),
+        "ebitda_reported": g(inc, ["EBITDA"]),
+        "ebitda_normalized_yahoo": g(inc, ["Normalized EBITDA"]),
+        "unusual_items": g(inc, ["Total Unusual Items", "Total Unusual Items Excluding Goodwill"]),
         "interest_expense": g(inc, ["Interest Expense", "Interest Expense Non Operating"]),
         "statement_date": str(bs.columns[0].date()) if bs is not None and not bs.empty else None,
     }
+
+    # Second source: cross-check and fill gaps BEFORE normalising
+    from .crosscheck import compare_and_fill, fetch_fmp
+    fmp = fetch_fmp(ticker)
+    fmp_fx = fx_rate(fmp.get("currency"), px_ccy) if fmp and fmp.get("currency") else fx
+    compare_and_fill(rec, fmp, fmp_fx)
+
+    return normalise(rec)
+
+
+def normalise(rec: dict) -> dict:
+    """Add one-off-adjusted EBIT and EBITDA.
+
+    Yahoo reports unusual items with their P&L sign (losses negative), so
+    subtracting them adds back impairments and restructuring charges.
+    """
+    unusual = rec.get("unusual_items", np.nan)
+    ebit_rep, ebitda_rep = rec["ebit_reported"], rec["ebitda_reported"]
+    ebitda_norm = rec.get("ebitda_normalized_yahoo", np.nan)
+    has_unusual = not np.isnan(unusual)
+    if np.isnan(ebitda_norm):
+        ebitda_norm = ebitda_rep - unusual if has_unusual else ebitda_rep
+    rec["ebitda"] = ebitda_norm
+    rec["ebit"] = ebit_rep - unusual if has_unusual else ebit_rep
+    # True when the ratios really are one-off adjusted
+    rec["normalised"] = has_unusual or not np.isnan(rec.get("ebitda_normalized_yahoo", np.nan))
+    return rec

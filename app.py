@@ -55,12 +55,12 @@ if status:
 COLORS = {"RED": "background-color:#f8d7da", "AMBER": "background-color:#fff3cd",
           "WATCH": "background-color:#e2e3f3",
           "GREEN": "background-color:#d1e7dd"}
-cols = ["ticker", "name", "sector", "status", "reasons", "data_issues",
+cols = ["ticker", "name", "sector", "status", "reasons", "source_check", "data_issues",
         "distance_to_default", "pd_1y", "altman_z2", "ebitda_coverage", "ebit_coverage",
         "net_debt_ebitda", "drawdown_52w", "market_cap_bn", "default_point_bn",
         "statement_date"]
 st.dataframe(
-    view[cols].style.map(lambda v: COLORS.get(v, ""), subset=["status"]).format({
+    view[[c for c in cols if c in view.columns]].style.map(lambda v: COLORS.get(v, ""), subset=["status"]).format({
         "distance_to_default": "{:.2f}", "pd_1y": "{:.2%}", "altman_z2": "{:.2f}",
         "ebitda_coverage": "{:.1f}x", "ebit_coverage": "{:.1f}x", "net_debt_ebitda": "{:.1f}x",
         "drawdown_52w": "{:.0%}", "market_cap_bn": "{:.1f}", "default_point_bn": "{:.1f}"},

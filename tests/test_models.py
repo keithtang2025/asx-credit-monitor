@@ -96,8 +96,8 @@ def test_one_off_ebit_flag_and_data_issues():
            "interest_expense": 2.0, "statement_date": "2020-06-30",
            "statement_currency": "USD"}
     out = score_company(rec)
-    assert "one-off items" in out["reasons"]
-    assert out["one_off_affected"]
+    assert "one-offs suspected" in out["reasons"]   # no unusual-items data
+    assert out["one_off_affected"] and not out["normalised"]
     assert out["flag_cov"] == "GREEN"          # 12.5x EBITDA cover
     assert "retained_earnings" in out["data_issues"]
     assert "months old" in out["data_issues"]
@@ -151,8 +151,90 @@ def test_normalised_coverage_avoids_false_red():
            "ebit": 18.0, "ebitda": 24.0,                  # normalised
            "ebit_reported": -12.0, "ebitda_reported": -6.0, "unusual_items": -30.0,
            "interest_expense": 2.0, "statement_date": "2026-06-30",
-           "statement_currency": "AUD"}
+           "statement_currency": "AUD", "normalised": True}
     out = score_company(rec)
     assert out["flag_cov"] == "GREEN"        # 12x on normalised EBITDA
     assert out["one_off_affected"]
     assert out["status"] in ("GREEN", "WATCH")
+
+
+# ---- v4: Star fix and second-source cross-check ----
+
+def _star_like(normalised: bool):
+    """Big one-offs, but normalised ratios still red (the Star pattern)."""
+    E, _ = simulate_equity(100, 70, 0.30, seed=11)
+    return {"ticker": "STR.AX", "name": "Star-like", "sector": "Consumer Cyclical",
+            "industry": "Resorts & Casinos", "prices": E / 10, "market_cap_series": E,
+            "short_term_debt": 30.0, "long_term_debt": 40.0, "total_debt": 70.0,
+            "cash": 5.0, "total_assets": 150.0, "total_liabilities": 120.0,
+            "working_capital": -20.0, "retained_earnings": -90.0, "book_equity": 30.0,
+            "ebit": -15.0, "ebitda": -6.0,                  # still negative after add-back
+            "ebit_reported": -160.0, "ebitda_reported": -150.0, "unusual_items": -144.0,
+            "interest_expense": 5.0, "statement_date": "2026-06-30",
+            "statement_currency": "AUD", "normalised": normalised}
+
+
+def test_v4_star_stays_red_when_normalised_ratios_are_still_red():
+    out = score_company(_star_like(normalised=True))
+    assert out["flag_z"] == "RED" and out["flag_cov"] == "RED"
+    assert out["status"] == "RED"
+    assert out["red_signals"] >= 2
+
+
+def test_v4_merge_only_when_not_normalisable():
+    out = score_company(_star_like(normalised=False))
+    assert "signals merged" in out["reasons"]
+
+
+from monitor.crosscheck import compare_and_fill  # noqa: E402
+from monitor.data import normalise  # noqa: E402
+
+
+def _yahoo_rec(**over):
+    rec = {"ticker": "CSL.AX", "statement_date": "2026-06-30",
+           "total_debt": 1.0e10, "short_term_debt": 1.0e9, "long_term_debt": 9.0e9,
+           "cash": 1.5e9, "total_assets": 3.8e10, "total_liabilities": 1.8e10,
+           "retained_earnings": 1.2e10, "book_equity": 2.0e10,
+           "ebit_reported": 4.0e9, "ebitda_reported": -3.5e9,   # bad Yahoo value
+           "interest_expense": 5.0e8}
+    rec.update(over)
+    return rec
+
+
+def _fmp(**over):
+    f = {"date": "2026-06-30", "currency": "AUD",
+         "total_debt": 1.0e10, "short_term_debt": 1.0e9, "long_term_debt": 9.0e9,
+         "cash": 1.5e9, "total_assets": 3.8e10, "total_liabilities": 1.8e10,
+         "retained_earnings": 1.2e10, "book_equity": 2.0e10,
+         "ebit_reported": 4.0e9, "ebitda_reported": 5.2e9, "interest_expense": -5.0e8}
+    f.update(over)
+    return f
+
+
+def test_crosscheck_flags_csl_style_bad_ebitda():
+    rec = compare_and_fill(_yahoo_rec(), _fmp())
+    assert rec["source_check"] == "MISMATCH"
+    assert "ebitda_reported" in rec["crosscheck_issues"][-1]
+    assert "interest_expense" not in rec["crosscheck_issues"][-1]   # sign convention ignored
+
+
+def test_crosscheck_ok_when_sources_agree():
+    rec = compare_and_fill(_yahoo_rec(ebitda_reported=5.1e9), _fmp())
+    assert rec["source_check"] == "OK"
+
+
+def test_crosscheck_fills_gaps_then_normalises():
+    rec = _yahoo_rec(ebitda_reported=float("nan"), interest_expense=float("nan"))
+    rec["unusual_items"] = float("nan")
+    rec = normalise(compare_and_fill(rec, _fmp()))
+    assert rec["ebitda"] == 5.2e9
+    assert any("filled from FMP" in i for i in rec["crosscheck_issues"])
+
+
+def test_crosscheck_different_periods_not_compared():
+    rec = compare_and_fill(_yahoo_rec(), _fmp(date="2025-06-30"))
+    assert rec["source_check"] == "PERIOD DIFFERS"
+
+
+def test_crosscheck_without_key_is_na():
+    assert compare_and_fill(_yahoo_rec(), None)["source_check"] == "N/A"

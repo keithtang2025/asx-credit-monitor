@@ -34,7 +34,29 @@ Score specific names only: `python run_monitor.py QAN.AX SGR.AX TAH.AX`
 Note: GitHub pauses scheduled workflows after 60 days with no repo
 activity. The daily commit counts as activity, so it keeps itself alive.
 
-## How it works (v3 scoring)
+## Second data source (optional, recommended)
+
+The monitor cross-checks Yahoo against Financial Modeling Prep (FMP).
+
+1. Get a free API key at financialmodelingprep.com (250 requests a day;
+   the monitor uses 2 per company).
+2. Repo **Settings > Secrets and variables > Actions > New repository
+   secret**. Name: `FMP_API_KEY`, value: your key.
+3. To run locally: `set FMP_API_KEY=yourkey` (Windows) or
+   `export FMP_API_KEY=yourkey` (Mac/Linux) before `python run_monitor.py`.
+
+For each company the `source_check` column shows:
+
+- **OK**: debt, assets, EBIT, EBITDA and interest agree within 10%
+- **MISMATCH**: they disagree; details in `data_issues`. If the company
+  has any red signal, the reasons also say "CHECK DATA"
+- **PERIOD DIFFERS**: the sources hold different financial years
+- **N/A**: no key, or FMP has no data for the ticker
+
+Fields missing from Yahoo are filled from FMP before scoring, and noted.
+Without a key the monitor runs on Yahoo alone.
+
+## How it works (v4 scoring)
 
 | Signal | Method | RED | AMBER |
 |---|---|---|---|
@@ -56,9 +78,10 @@ utilities 1.5x / 2.5x.
 - **GREEN**: everything else
 
 **One-off adjustment.** Ratios use Yahoo's "Normalized EBITDA" and EBIT with
-unusual items added back. When unusual items exceed 25% of normalised
-EBITDA, the year is marked one-off affected and Z'' and interest cover count
-as one signal, since a single impairment would otherwise trip both.
+unusual items added back. If the ratios have been cleaned this way and are
+still red, the weakness is underlying, so Z'' and interest cover count as two
+independent signals. Only when one-offs are suspected but cannot be removed
+(no unusual-items data) do the two count as one signal.
 
 **Data quality.** The `data_issues` column lists missing fields, statements
 older than about 15 months and currency conversion. Renamed tickers are
@@ -73,6 +96,9 @@ from the watchlist (QUB, taken private in 2026).
   crowded with grey-zone scores.
 - v3: normalised earnings, sector cover thresholds, shared-cause rule and a
   WATCH tier so AMBER is a short list worth reading.
+- v4: fixed the shared-cause rule, which wrongly demoted Star to AMBER by
+  merging signals that were already cleaned of one-offs. Added FMP as a
+  second source to cross-check Yahoo and fill gaps.
 
 Thresholds live in `monitor/config.py`. Treat them as a starting risk
 appetite and recalibrate after backtesting.
@@ -84,6 +110,7 @@ monitor/config.py   watchlist, risk-free rate, thresholds
 monitor/data.py     yfinance fetch, statement field mapping, FX conversion
 monitor/models.py   Merton/KMV, Altman Z'', coverage, RAG logic
 monitor/engine.py   scores one company and the whole watchlist
+monitor/crosscheck.py  FMP second source, cross-check and gap filling
 run_monitor.py      CLI run, snapshot history, change detection
 app.py              Streamlit dashboard with drill-down DD history
 tests/              synthetic-data tests (KMV recovers known asset vol and DD)

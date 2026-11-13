@@ -1,0 +1,45 @@
+name: Daily credit monitor
+
+on:
+  schedule:
+    - cron: "0 7 * * 1-5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Tests
+        run: python -m pytest -q
+
+      - name: Run monitor
+        run: |
+          mkdir -p data
+          python run_monitor.py | tee data/last_run_log.txt
+
+      - name: Write job summary
+        run: |
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat data/last_run_log.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit results
+        run: |
+          git config user.name "credit-monitor-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "Monitor run $(date -u +%F)"
+          git push

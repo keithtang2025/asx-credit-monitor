@@ -1,0 +1,67 @@
+"""Model checks on synthetic data (no internet needed).  Run: python -m pytest -q"""
+import numpy as np
+import pandas as pd
+from scipy.stats import norm
+
+from monitor.engine import run_watchlist
+from monitor.models import _bs_equity, altman_z2, merton_kmv, rag
+
+
+def simulate_equity(V0, D, sigma_v, r=0.04, T=1.0, n=252, seed=0):
+    """Simulate asset paths, convert to equity via Black-Scholes."""
+    rng = np.random.default_rng(seed)
+    dt = 1 / 252
+    shocks = rng.normal((r - 0.5 * sigma_v**2) * dt, sigma_v * np.sqrt(dt), n)
+    V = V0 * np.exp(np.cumsum(shocks))
+    E = _bs_equity(V, D, r, sigma_v, T)
+    idx = pd.bdate_range("2025-01-01", periods=n)
+    return pd.Series(E, idx), V
+
+
+def test_kmv_recovers_true_asset_vol_and_dd():
+    D, sigma_true, r = 60.0, 0.25, 0.04
+    E, V = simulate_equity(100.0, D, sigma_true, r)
+    res = merton_kmv(E, D, r)
+    assert abs(res["asset_vol"] - sigma_true) < 0.03
+    true_dd = (np.log(V[-1] / D) + (r - 0.5 * sigma_true**2)) / sigma_true
+    assert abs(res["distance_to_default"] - true_dd) < 0.3
+    assert abs(res["pd_1y"] - norm.cdf(-true_dd)) < 0.02
+
+
+def test_more_leverage_means_lower_dd():
+    safe = merton_kmv(simulate_equity(100, 20, 0.3)[0], 20)
+    risky = merton_kmv(simulate_equity(100, 85, 0.3)[0], 85)
+    assert risky["distance_to_default"] < safe["distance_to_default"]
+    assert risky["pd_1y"] > safe["pd_1y"]
+
+
+def test_no_debt_is_zero_pd():
+    res = merton_kmv(simulate_equity(100, 1, 0.3)[0], 0.0)
+    assert res["pd_1y"] == 0.0
+
+
+def test_altman_and_rag():
+    z = altman_z2(10, 20, 8, 50, 100, 50)
+    assert np.isclose(z, 6.56 * .1 + 3.26 * .2 + 6.72 * .08 + 1.05 * 1.0)
+    assert rag(0.5, 1.1, 2.6) == "RED"
+    assert rag(2.0, 1.1, 2.6) == "AMBER"
+    assert rag(3.0, 1.1, 2.6) == "GREEN"
+    assert rag(np.nan, 1, 2) == "N/A"
+
+
+def test_engine_end_to_end_with_fake_fetch():
+    def fake(tk):
+        D = {"SAFE.AX": 10.0, "RISKY.AX": 90.0}[tk]
+        E, _ = simulate_equity(100, D, 0.35, seed=1)
+        return {"ticker": tk, "name": tk, "sector": "Test", "prices": E / 10,
+                "market_cap_series": E, "short_term_debt": D, "long_term_debt": 0.0,
+                "total_debt": D, "cash": 1.0, "total_assets": 100.0,
+                "total_liabilities": D, "working_capital": 5.0, "retained_earnings": 5.0,
+                "book_equity": 100 - D, "ebit": 6.0, "ebitda": 9.0,
+                "interest_expense": D * 0.06, "statement_date": "2025-06-30",
+                "statement_currency": "AUD"}
+    df = run_watchlist(["SAFE.AX", "RISKY.AX"], fetch=fake, verbose=False)
+    assert df.iloc[0]["ticker"] == "RISKY.AX"  # worst sorted first
+    assert df.set_index("ticker").loc["RISKY.AX", "status"] == "RED"
+    safe = df.set_index("ticker").loc["SAFE.AX"]
+    assert safe["flag_dd"] == "GREEN" and safe["flag_icr"] == "GREEN"

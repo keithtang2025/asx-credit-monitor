@@ -1,4 +1,4 @@
-"""Runs the models over a company record and the full watchlist (v8 scoring)."""
+"""Runs the models over a company record and the full watchlist (v9 scoring)."""
 from __future__ import annotations
 
 from datetime import date
@@ -78,8 +78,16 @@ def score_company(rec: dict) -> dict:
 
     # Net cash: more cash than debt (v6). v8: Z'' is also switched off for
     # these, since accumulated start-up losses say nothing about default risk.
-    net_cash = (not _nan(rec.get("cash")) and not _nan(rec.get("total_debt"))
-                and rec["cash"] >= rec["total_debt"])
+    # v9: Yahoo omits debt lines for debt-free companies; missing = zero
+    debt_parts = [rec.get(k) for k in ("total_debt", "short_term_debt", "long_term_debt")]
+    if not _nan(rec.get("total_debt")):
+        debt = rec["total_debt"]
+    elif any(not _nan(v) for v in debt_parts[1:]):
+        debt = sum(0.0 if _nan(v) else v for v in debt_parts[1:])
+    else:
+        debt = 0.0
+    cash = rec.get("cash")
+    net_cash = not _nan(cash) and cash >= debt
     z_on = z_applies(rec) and not net_cash
     z = altman_z2(rec["working_capital"], rec["retained_earnings"], rec["ebit"],
                   rec["book_equity"], rec["total_assets"], rec["total_liabilities"])
@@ -88,8 +96,10 @@ def score_company(rec: dict) -> dict:
     cov_3y = coverage(ebitda_3y, int_3y) if not _nan(ebitda_3y) else np.nan
 
     # Cyclicals are judged through the cycle; everyone else on the latest year
+    ind = str(rec.get("industry", "")).lower()
     cyclical = (rec.get("sector") in C.CYCLICAL_SECTORS
-                or rec["ticker"] in C.CYCLICAL_TICKERS)
+                or rec["ticker"] in C.CYCLICAL_TICKERS
+                or any(k in ind for k in C.CYCLICAL_INDUSTRY_KEYWORDS))
     if cyclical and not _nan(cov_3y):
         ebitda_cov, cov_basis = cov_3y, "3y avg"
     else:
@@ -126,18 +136,29 @@ def score_company(rec: dict) -> dict:
     gear_thr = gearing_thresholds(rec)
     loss_making = (not _nan(rec["ebitda"]) and rec["ebitda"] <= 0
                    and not (cyclical and not _nan(cov_3y) and ebitda_3y > 0))
-    gearing = (rec["total_debt"] / rec["total_assets"]
-               if not _nan(rec.get("total_debt")) and not _nan(rec.get("total_assets"))
-               and rec["total_assets"] > 0 else np.nan)
+    # v9: net gearing, as REITs and their lenders measure it:
+    # (debt - cash) / (total assets - cash), floored at zero
+    cash0 = 0.0 if _nan(cash) else cash
+    assets = rec.get("total_assets")
+    gearing = (max(debt - cash0, 0.0) / (assets - cash0)
+               if not _nan(assets) and assets - cash0 > 0 else np.nan)
     runway = np.nan
+    f_fund = "N/A"
+    if loss_making:
+        burn = -rec["ebitda"] + (abs(rec["interest_expense"])
+                                 if not _nan(rec.get("interest_expense")) else 0.0)
+        if not _nan(cash) and burn > 0:
+            runway = 12 * cash / burn
     if gear_thr:
         credit_metric, credit_value = "gearing", gearing
         f_cov = rag_high(gearing, *gear_thr)
+    elif loss_making and net_cash:
+        # v9: cash covers all debt, so lenders could be repaid today. A short
+        # runway means raising equity (dilution), not default: funding risk,
+        # capped at WATCH.
+        credit_metric, credit_value, f_cov = "funding runway", runway, "OFF"
+        f_fund = rag(runway, *C.RUNWAY_MONTHS)
     elif loss_making:
-        burn = -rec["ebitda"] + (abs(rec["interest_expense"])
-                                 if not _nan(rec.get("interest_expense")) else 0.0)
-        if not _nan(rec.get("cash")) and burn > 0:
-            runway = 12 * rec["cash"] / burn
         credit_metric, credit_value = "cash runway", runway
         f_cov = rag(runway, *C.RUNWAY_MONTHS)
     elif net_cash:
@@ -157,6 +178,9 @@ def score_company(rec: dict) -> dict:
                               shared_cause=shared_cause,
                               red_needed=C.RED_SIGNALS_NEEDED)
 
+    if status == "GREEN" and f_fund in ("RED", "AMBER"):
+        status = "WATCH"
+
     reasons = []
     if f_dd in ("RED", "AMBER"):
         reasons.append(f"DD {m['distance_to_default']:.2f} ({f_dd})")
@@ -169,6 +193,12 @@ def score_company(rec: dict) -> dict:
             reasons.append(f"loss-making: cash runway {runway:.0f} months ({f_cov})")
         else:
             reasons.append(f"EBITDA cover {ebitda_cov:.1f}x {cov_basis} ({f_cov})")
+    if f_fund in ("RED", "AMBER"):
+        reasons.append(f"funding risk (cash covers debt): runway {runway:.0f} months")
+    dd_val = m["distance_to_default"]
+    if (f_cov == "RED" and not _nan(dd_val) and not np.isinf(dd_val)
+            and dd_val >= C.MARKET_DISAGREES_DD):
+        reasons.append(f"CHECK DATA: market (DD {dd_val:.1f}) sees less risk than the accounts")
     if f_trend == "AMBER":
         if rec["ebitda"] <= 0:
             reasons.append("earnings falling: EBITDA turned negative (3y avg positive)")
@@ -200,6 +230,7 @@ def score_company(rec: dict) -> dict:
         "credit_metric_value": credit_value,
         "gearing": gearing,
         "cash_runway_months": runway,
+        "flag_funding": f_fund,
         "pd_1y": m["pd_1y"],
         "altman_z2": z if z_on else np.nan,
         "z_applies": z_on,

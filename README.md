@@ -61,7 +61,7 @@ v6 runs on Yahoo Finance only. The FMP cross-check code is kept in
 `config.py`). To switch it back on, set it to True and add an `FMP_API_KEY`
 repository secret plus an `env:` line in the workflow's "Run monitor" step.
 
-## How it works (v8 scoring)
+## How it works (v9 scoring)
 
 | Signal | Method | RED | AMBER |
 |---|---|---|---|
@@ -81,13 +81,18 @@ metric, chosen by how it makes and pays its money:
 | Business | Metric | RED | AMBER |
 |---|---|---|---|
 | Profitable operating companies | Interest cover (EBITDA / interest) | sector line | sector line |
-| Loss-making (EBITDA at or below zero) | Cash runway: cash / (cash burn + interest) | under 12 months | under 24 months |
-| REITs and property | Gearing: debt / total assets | over 45% | over 35% |
+| Loss-making, with net debt | Cash runway: cash / (cash burn + interest) | under 12 months | under 24 months |
+| Loss-making, cash covers all debt | Funding runway: short runway gives WATCH only (equity dilution risk, not default) | | |
+| REITs and property | Net gearing: (debt - cash) / (assets - cash) | over 45% | over 35% |
 | Toll roads, ports, airports | Gearing | over 65% | over 55% |
 | Net cash, profitable | Off (no meaningful default risk from debt) | | |
 
 Runway uses EBITDA as the burn rate, so it ignores capex and is optimistic
-for developers that are still building.
+for developers that are still building. Agribusiness (GrainCorp, Cobram,
+Nufarm, Elders, Select Harvests) is judged on 3-year averages like mining.
+When the credit metric is RED but distance to default is 4 or more, the
+reasons add "CHECK DATA: market sees less risk than the accounts", a prompt
+to verify the figures (it does not change the status).
 
 **Status rule**
 
@@ -157,6 +162,10 @@ from the watchlist (QUB, taken private in 2026).
   matching the credit metric to the business model (cash runway for
   loss-makers, gearing for property and infrastructure), making Z'' a
   supporting signal, and switching Z'' off for net-cash companies.
+- v9: fixed debt-free companies not being recognised as net cash; short
+  runway with no net debt is funding risk (WATCH); net gearing for REITs;
+  Infratil on infrastructure gearing; agribusiness through the cycle;
+  "market disagrees" data check.
 
 Thresholds live in `monitor/config.py`. Treat them as a starting risk
 appetite and recalibrate after backtesting.

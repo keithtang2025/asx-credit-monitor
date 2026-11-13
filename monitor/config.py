@@ -95,6 +95,7 @@ GEARING_TICKER_OVERRIDES = {
     # toll roads, ports, airports: structurally higher gearing
     "TCL.AX": (0.65, 0.55), "ALX.AX": (0.65, 0.55),
     "DBI.AX": (0.65, 0.55), "AIA.AX": (0.65, 0.55),
+    "IFT.AX": (0.65, 0.55),   # Infratil: infrastructure investor, equity-accounted stakes
 }
 
 # Loss-making companies (EBITDA <= 0) are judged on CASH RUNWAY:
@@ -104,6 +105,10 @@ RUNWAY_MONTHS = (12, 24)
 # Altman Z'' red on its own only gives WATCH; it needs a second signal to
 # raise an AMBER. It is switched off entirely for net-cash companies.
 Z_ALONE_STATUS = "WATCH"
+
+# v9: when a hard accounting red appears but the market prices little risk
+# (distance to default at or above this), add a "check data" note.
+MARKET_DISAGREES_DD = 4.0
 
 # --- v6: data sources ---
 # Second source (FMP) for cross-checking. Off: the monitor runs on Yahoo only.
@@ -118,7 +123,10 @@ EBIT_GAP_TOLERANCE = 0.10
 # Sectors where interest cover is judged on the 3-year average EBITDA, so a
 # single commodity downturn year does not trigger alerts by itself.
 CYCLICAL_SECTORS = {"Basic Materials", "Energy"}
-CYCLICAL_TICKERS = set()          # add codes here to force 3-year treatment
+# v9: agribusiness swings with harvests and seasons (Cobram's olive crop
+# alternates big and small years), so it is judged through the cycle too.
+CYCLICAL_INDUSTRY_KEYWORDS = ["farm products", "agricultural"]
+CYCLICAL_TICKERS = {"GNC.AX", "CBO.AX", "NUF.AX", "ELD.AX", "SHV.AX"}
 MIN_YEARS_FOR_AVERAGE = 2         # need at least this many years for an average
 
 # "Earnings falling" flag: latest normalised EBITDA below this share of the

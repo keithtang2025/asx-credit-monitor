@@ -385,9 +385,9 @@ def test_v6_net_cash_switches_cover_off():
         da=[20 * M] * 4, interest=[8 * M] * 4, ebitda_yahoo=[np.nan] * 4,
         cash=900 * M, debt=50 * M)
     out = score_company(rec)
-    # v8: negative operating EBITDA -> judged on cash runway (900m cash vs ~48m burn)
-    assert out["net_cash"] and out["credit_metric"] == "cash runway"
-    assert out["flag_cov"] == "GREEN"
+    # v9: loss-making but cash covers debt -> funding runway, not a credit flag
+    assert out["net_cash"] and out["credit_metric"] == "funding runway"
+    assert out["flag_cov"] == "OFF" and out["flag_funding"] == "GREEN"
     assert "EBITDA cover" not in out["reasons"]
 
 
@@ -487,8 +487,8 @@ def test_v8_reit_judged_on_gearing_not_cover():
                 ebitda=70 * M, interest_expense=60 * M)          # cover 1.2x
     out = score_company(_base(total_debt=1500 * M, **reit))      # gearing 30%
     assert out["credit_metric"] == "gearing" and out["flag_cov"] == "GREEN"
-    out = score_company(_base(total_debt=2400 * M, **reit))      # gearing 48%
-    assert out["flag_cov"] == "RED" and "gearing 48%" in out["reasons"]
+    out = score_company(_base(total_debt=2400 * M, **reit))      # net gearing 47%
+    assert out["flag_cov"] == "RED" and "gearing 47%" in out["reasons"]
 
 
 def test_v8_toll_road_override_uses_higher_gearing_line():
@@ -514,3 +514,57 @@ def test_v8_multi_signal_still_red():
     assert status_v8("AMBER", "RED", "RED", "GREEN")[0] == "RED"
     assert status_v8("GREEN", "RED", "GREEN", "AMBER")[0] == "AMBER"   # Z'' + drawdown
     assert status_v8("GREEN", "GREEN", "RED", "GREEN")[0] == "AMBER"   # hard red alone
+
+
+
+# ---- v9 ----
+
+def test_v9_missing_debt_lines_mean_no_debt():
+    """EchoIQ pattern: Yahoo omits debt rows; must count as net cash, Z'' off."""
+    nan = float("nan")
+    out = score_company(_base(short_term_debt=nan, long_term_debt=nan, total_debt=nan,
+                              cash=30 * M, retained_earnings=-4000 * M,
+                              ebitda=-20 * M, ebit=-21 * M, interest_expense=nan))
+    assert out["net_cash"] and out["flag_z"] == "OFF"
+
+
+def test_v9_no_debt_short_runway_is_funding_watch():
+    """PYC/Clarity pattern: 8 months of cash, no debt -> WATCH, not AMBER/RED."""
+    out = score_company(_base(short_term_debt=0.0, long_term_debt=0.0, total_debt=0.0,
+                              cash=40 * M, ebitda=-60 * M, ebit=-61 * M,
+                              interest_expense=0.0))
+    assert out["credit_metric"] == "funding runway" and out["flag_funding"] == "RED"
+    assert out["status"] == "WATCH"
+    assert "funding risk" in out["reasons"]
+
+
+def test_v9_loss_maker_with_net_debt_keeps_credit_flag():
+    out = score_company(_base(ebitda=-40 * M, ebit=-45 * M, cash=25 * M, total_debt=30 * M,
+                              short_term_debt=10 * M, long_term_debt=20 * M,
+                              interest_expense=2 * M))
+    assert out["credit_metric"] == "cash runway" and out["flag_cov"] == "RED"
+    assert out["status"] in ("AMBER", "RED")
+
+
+def test_v9_infratil_on_infrastructure_gearing():
+    out = score_company(_base(ticker="IFT.AX", ebitda=100 * M, interest_expense=60 * M))
+    assert out["credit_metric"] == "gearing"
+
+
+def test_v9_agribusiness_uses_three_year_average():
+    rec = _company_with_history(
+        "Consumer Defensive", ebit=[20 * M, 400 * M, 380 * M, 350 * M],
+        opinc=[20 * M, 400 * M, 380 * M, 350 * M],
+        da=[30 * M] * 4, interest=[60 * M] * 4, ebitda_yahoo=[np.nan] * 4)
+    rec["ticker"] = "GNC.AX"
+    out = score_company(rec)
+    assert out["cyclical"] and out["coverage_basis"] == "3y avg"
+    assert out["flag_cov"] != "RED"
+    assert out["flag_trend"] == "AMBER"          # the bad harvest is still flagged
+
+
+def test_v9_market_disagrees_note():
+    """Nine pattern: accounts say crisis, market says fine -> check data note."""
+    out = score_company(_base(ebitda=50 * M, interest_expense=60 * M))   # cover 0.8x
+    if out["distance_to_default"] >= 4:
+        assert "CHECK DATA: market" in out["reasons"]

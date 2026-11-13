@@ -34,35 +34,45 @@ Score specific names only: `python run_monitor.py QAN.AX SGR.AX TAH.AX`
 Note: GitHub pauses scheduled workflows after 60 days with no repo
 activity. The daily commit counts as activity, so it keeps itself alive.
 
-## How it works (v2 scoring)
+## How it works (v3 scoring)
 
 | Signal | Method | RED | AMBER |
 |---|---|---|---|
 | Distance to default (lead signal) | KMV iteration on 1 year of daily market cap; default point = ST debt + 0.5 x LT debt; risk-neutral drift | < 2.0 | < 3.5 |
-| Altman Z'' (sector-aware) | 6.56 WC/TA + 3.26 RE/TA + 6.72 EBIT/TA + 1.05 BE/TL; switched OFF for supermarkets, airlines, travel, infrastructure, utilities and property | < 1.1 | < 2.6 |
-| EBITDA interest cover | EBITDA / interest expense (EBIT cover shown for reference) | < 2.0x | < 4.0x |
+| Altman Z'' (sector-aware) | Uses EBIT normalised for one-offs; switched OFF for supermarkets, airlines, travel, infrastructure, utilities and property | < 1.1 | < 2.6 |
+| Interest cover | Normalised EBITDA / interest; thresholds by sector (below) | sector | sector |
 | Market stress | Drawdown from 52-week high | | >= 40% |
+
+Interest cover thresholds (red / amber): default 2.0x / 4.0x; REITs and
+property 1.75x / 2.75x; infrastructure, toll roads, pipelines and
+utilities 1.5x / 2.5x.
 
 **Status rule**
 
-- **RED**: distance to default below 2.0, or at least two signals RED at once
-- **AMBER**: any single signal RED or AMBER, or the drawdown flag
+- **RED**: distance to default below 2.0, or two independent signals red
+- **AMBER**: distance to default amber, or one accounting signal red, or two
+  accounting signals amber, or a drawdown together with any accounting warning
+- **WATCH**: a single accounting signal amber, or a drawdown on its own
 - **GREEN**: everything else
 
-**Extra flags**
+**One-off adjustment.** Ratios use Yahoo's "Normalized EBITDA" and EBIT with
+unusual items added back. When unusual items exceed 25% of normalised
+EBITDA, the year is marked one-off affected and Z'' and interest cover count
+as one signal, since a single impairment would otherwise trip both.
 
-- "EBIT negative, likely one-offs" when EBIT is negative but EBITDA is
-  positive (impairments, restructuring, discontinued operations).
-- A `data_issues` column lists missing fields, statements older than about
-  15 months, and currency conversion. These describe data quality, not risk.
+**Data quality.** The `data_issues` column lists missing fields, statements
+older than about 15 months and currency conversion. Renamed tickers are
+mapped in `TICKER_ALIASES` (e.g. SVW to SGH); delisted names are removed
+from the watchlist (QUB, taken private in 2026).
 
-**Why v2.** The first version made a company RED if any single ratio was
-red, which flagged around a third of the watchlist. Most were false
-positives: Altman Z'' misreads customer-funded working capital
-(supermarkets, airlines, travel) and concession assets (toll roads,
-pipelines), and EBIT-based cover was distorted by one-off write-downs.
-v2 leads with the market signal and needs independent signals to agree
-before escalating.
+**Version history**
+
+- v1: any red ratio made a company RED; about a third of the list was RED.
+- v2: distance to default leads, sector-aware Z'', EBITDA cover. RED fell to
+  two names, but one-off impairments still created false REDs and AMBER was
+  crowded with grey-zone scores.
+- v3: normalised earnings, sector cover thresholds, shared-cause rule and a
+  WATCH tier so AMBER is a short list worth reading.
 
 Thresholds live in `monitor/config.py`. Treat them as a starting risk
 appetite and recalibrate after backtesting.

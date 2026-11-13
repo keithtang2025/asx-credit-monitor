@@ -10,8 +10,8 @@ WATCHLIST = [
     "WES.AX", "WOW.AX", "COL.AX", "JBH.AX", "HVN.AX", "TWE.AX", "A2M.AX",
     "SGR.AX", "TAH.AX", "QAN.AX", "FLT.AX", "WEB.AX",
     # Industrials, infrastructure, utilities
-    "TCL.AX", "APA.AX", "AZJ.AX", "QUB.AX", "BXB.AX", "AMC.AX", "ORA.AX",
-    "JHX.AX", "BSL.AX", "SVW.AX", "LLC.AX", "AGL.AX", "ORG.AX", "TLS.AX",
+    "TCL.AX", "APA.AX", "AZJ.AX", "BXB.AX", "AMC.AX", "ORA.AX",
+    "JHX.AX", "BSL.AX", "SGH.AX", "LLC.AX", "AGL.AX", "ORG.AX", "TLS.AX",
     # Healthcare and tech
     "CSL.AX", "RMD.AX", "SHL.AX", "RHC.AX", "NXT.AX", "XRO.AX", "WTC.AX",
     # Property (A-REITs)
@@ -32,14 +32,35 @@ VOL_WINDOW = 252
 THRESHOLDS = {
     "distance_to_default": (2.0, 3.5),
     "altman_z2": (1.1, 2.6),           # Altman Z'' distress / grey zone cut-offs
-    "ebitda_coverage": (2.0, 4.0),     # EBITDA / interest expense (primary)
+    "ebitda_coverage": (2.0, 4.0),     # normalised EBITDA / interest (default)
 }
 
-# Status rule (v2):
-#   RED   = DD below its red line, OR at least RED_SIGNALS_NEEDED signals RED
-#   AMBER = any single signal RED or AMBER, or the drawdown flag
+# Interest cover thresholds by business model (red, amber). Matched against
+# Yahoo industry/sector text; first match wins, otherwise the default above.
+# Property trusts and regulated/concession assets carry more debt by design;
+# their bank covenants typically sit around 1.5x to 2.0x.
+COVERAGE_BY_SECTOR = [
+    (["reit", "real estate"], (1.75, 2.75)),
+    (["infrastructure", "toll", "midstream", "utilities"], (1.5, 2.5)),
+]
+
+# Status rule (v3):
+#   RED   = DD below its red line, OR at least RED_SIGNALS_NEEDED independent reds
+#   AMBER = DD amber, OR one accounting signal red, OR two accounting signals
+#           amber, OR drawdown together with any accounting warning
+#   WATCH = a single accounting signal amber, OR drawdown on its own
 #   GREEN = otherwise
 RED_SIGNALS_NEEDED = 2
+
+# Unusual items (impairments, restructuring) larger than this share of
+# normalised EBITDA mark the year as "one-off affected". In that case Z'' and
+# interest cover count as ONE signal, because they share the same cause.
+ONE_OFF_SHARE = 0.25
+
+# Old or renamed ASX codes. Delisted names should be removed from WATCHLIST.
+TICKER_ALIASES = {
+    "SVW.AX": "SGH.AX",   # Seven Group Holdings renamed SGH Ltd, Nov 2024
+}
 
 # Altman Z'' is switched off for business models it misreads:
 # customer-funded working capital, concession/regulated assets, property trusts.
@@ -50,7 +71,11 @@ Z_EXCLUDE_KEYWORDS = [
 ]
 # Ticker-level overrides (in case Yahoo's industry label misses one)
 Z_EXCLUDE_TICKERS = {"WOW.AX", "COL.AX", "QAN.AX", "FLT.AX", "WEB.AX", "TCL.AX",
-                     "APA.AX", "AZJ.AX", "QUB.AX", "AGL.AX", "ORG.AX", "SGP.AX"}
+                     "APA.AX", "AZJ.AX", "AGL.AX", "ORG.AX", "SGP.AX"}
+# Same idea for interest-cover thresholds when Yahoo's label misses
+COVERAGE_TICKER_OVERRIDES = {
+    "TCL.AX": (1.5, 2.5), "APA.AX": (1.5, 2.5), "AZJ.AX": (1.5, 2.5),
+}
 
 # Balance sheets older than this are flagged as stale (days)
 STALE_STATEMENT_DAYS = 456   # about 15 months

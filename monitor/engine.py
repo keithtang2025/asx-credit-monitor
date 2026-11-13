@@ -1,4 +1,4 @@
-"""Runs the models over a company record and the full watchlist (v2 scoring)."""
+"""Runs the models over a company record and the full watchlist (v3 scoring)."""
 from __future__ import annotations
 
 from datetime import date
@@ -8,7 +8,7 @@ import pandas as pd
 
 from . import config as C
 from .models import (altman_z2, coverage, default_point, merton_kmv,
-                     net_debt_to_ebitda, rag, status_v2)
+                     net_debt_to_ebitda, rag, status_v3)
 
 
 def _nan(x) -> bool:
@@ -21,6 +21,16 @@ def z_applies(rec: dict) -> bool:
         return False
     text = f"{rec.get('industry', '')} {rec.get('sector', '')}".lower()
     return not any(k in text for k in C.Z_EXCLUDE_KEYWORDS)
+
+
+def coverage_thresholds(rec: dict) -> tuple[float, float]:
+    if rec["ticker"] in C.COVERAGE_TICKER_OVERRIDES:
+        return C.COVERAGE_TICKER_OVERRIDES[rec["ticker"]]
+    text = f"{rec.get('industry', '')} {rec.get('sector', '')}".lower()
+    for keywords, thr in C.COVERAGE_BY_SECTOR:
+        if any(k in text for k in keywords):
+            return thr
+    return C.THRESHOLDS["ebitda_coverage"]
 
 
 def data_quality(rec: dict, z_on: bool) -> list[str]:
@@ -61,10 +71,15 @@ def score_company(rec: dict) -> dict:
     ebit_cov = coverage(rec["ebit"], rec["interest_expense"])
     lev = net_debt_to_ebitda(rec["total_debt"], rec["cash"], rec["ebitda"])
 
-    # One-off distortion: EBIT negative while EBITDA positive suggests
-    # impairments or restructuring charges rather than weak cash earnings.
-    ebit_distorted = (not _nan(rec["ebit"]) and not _nan(rec["ebitda"])
-                      and rec["ebit"] < 0 < rec["ebitda"])
+    # One-off distortion: large unusual items relative to normalised EBITDA,
+    # or reported EBIT negative while normalised EBITDA is positive.
+    unusual = rec.get("unusual_items", np.nan)
+    ebit_rep = rec.get("ebit_reported", rec["ebit"])
+    one_off = False
+    if not _nan(unusual) and not _nan(rec["ebitda"]) and rec["ebitda"] != 0:
+        one_off = abs(unusual) > C.ONE_OFF_SHARE * abs(rec["ebitda"])
+    if not _nan(ebit_rep) and not _nan(rec["ebitda"]) and ebit_rep < 0 < rec["ebitda"]:
+        one_off = True
 
     px = rec["prices"].iloc[-252:]
     drawdown = 1 - px.iloc[-1] / px.max()
@@ -72,10 +87,12 @@ def score_company(rec: dict) -> dict:
 
     f_dd = rag(m["distance_to_default"], *C.THRESHOLDS["distance_to_default"])
     f_z = rag(z, *C.THRESHOLDS["altman_z2"]) if z_on else "OFF"
-    f_cov = rag(ebitda_cov, *C.THRESHOLDS["ebitda_coverage"])
+    cov_thr = coverage_thresholds(rec)
+    f_cov = rag(ebitda_cov, *cov_thr)
     f_mkt = "AMBER" if drawdown >= C.DRAWDOWN_ALERT else "GREEN"
 
-    status = status_v2(f_dd, [f_dd, f_z, f_cov], f_mkt, C.RED_SIGNALS_NEEDED)
+    status, n_red = status_v3(f_dd, f_z, f_cov, f_mkt, shared_cause=one_off,
+                              red_needed=C.RED_SIGNALS_NEEDED)
 
     reasons = []
     if f_dd in ("RED", "AMBER"):
@@ -86,8 +103,9 @@ def score_company(rec: dict) -> dict:
         reasons.append(f"EBITDA cover {ebitda_cov:.1f}x ({f_cov})")
     if f_mkt == "AMBER":
         reasons.append(f"drawdown {drawdown:.0%}")
-    if ebit_distorted:
-        reasons.append("EBIT negative, likely one-offs")
+    if one_off:
+        u = f"{unusual / 1e6:,.0f}m" if not _nan(unusual) else "n/a"
+        reasons.append(f"one-off items {u} (ratios normalised)")
 
     dq = data_quality(rec, z_on)
 
@@ -102,7 +120,10 @@ def score_company(rec: dict) -> dict:
         "altman_z2": z if z_on else np.nan,
         "z_applies": z_on,
         "ebitda_coverage": ebitda_cov,
+        "coverage_red_line": cov_thr[0],
         "ebit_coverage": ebit_cov,
+        "one_off_affected": one_off,
+        "unusual_items_m": unusual / 1e6 if not _nan(unusual) else np.nan,
         "net_debt_ebitda": lev,
         "drawdown_52w": drawdown,
         "return_3m": ret_3m,
@@ -110,7 +131,7 @@ def score_company(rec: dict) -> dict:
         "default_point_bn": dp / 1e9,
         "asset_vol": m["asset_vol"],
         "flag_dd": f_dd, "flag_z": f_z, "flag_cov": f_cov, "flag_mkt": f_mkt,
-        "red_signals": sum(f == "RED" for f in (f_dd, f_z, f_cov)),
+        "red_signals": n_red,
         "statement_date": rec["statement_date"],
         "statement_currency": rec["statement_currency"],
     }
@@ -132,7 +153,7 @@ def run_watchlist(tickers=None, fetch=None, verbose=True) -> pd.DataFrame:
                 print(f"  skip {tk}: {e}")
     df = pd.DataFrame(rows)
     if not df.empty:
-        order = {"RED": 0, "AMBER": 1, "GREEN": 2, "N/A": 3}
+        order = {"RED": 0, "AMBER": 1, "WATCH": 2, "GREEN": 3, "N/A": 4}
         df["_o"] = df["status"].map(order)
         df = df.sort_values(["_o", "distance_to_default"]).drop(columns="_o")
     df.attrs["errors"] = errors

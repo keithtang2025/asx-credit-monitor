@@ -146,6 +146,32 @@ def status_v2(flag_dd: str, signal_flags: list[str], flag_mkt: str,
     return "GREEN"
 
 
+def status_v3(flag_dd: str, flag_z: str, flag_cov: str, flag_mkt: str,
+              shared_cause: bool = False, red_needed: int = 2) -> tuple[str, int]:
+    """v3 rule with a WATCH tier and a shared-cause adjustment.
+
+    Returns (status, number of independent red signals).
+    """
+    acct = [f for f in (flag_z, flag_cov) if f not in ("OFF", "N/A")]
+    acct_red = sum(f == "RED" for f in acct)
+    acct_amber = sum(f == "AMBER" for f in acct)
+    if shared_cause and acct_red > 1:
+        acct_red = 1          # one impairment hitting two ratios is one signal
+    n_red = acct_red + (flag_dd == "RED")
+    mkt = flag_mkt == "AMBER"
+
+    if flag_dd == "RED" or n_red >= red_needed:
+        return "RED", n_red
+    if (flag_dd == "AMBER" or acct_red >= 1 or acct_amber >= 2
+            or (mkt and (acct_red + acct_amber) >= 1)):
+        return "AMBER", n_red
+    if acct_amber == 1 or mkt:
+        return "WATCH", n_red
+    if flag_dd == "N/A" and not acct:
+        return "N/A", n_red
+    return "GREEN", n_red
+
+
 def coverage(numerator, interest_expense) -> float:
     """Generic coverage ratio (EBIT or EBITDA over interest)."""
     return interest_coverage(numerator, interest_expense)

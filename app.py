@@ -14,8 +14,8 @@ DATA = Path(__file__).parent / "data"
 st.set_page_config(page_title="ASX Credit Risk Monitor", layout="wide")
 st.title("ASX Credit Risk Monitor")
 st.caption("Merton/KMV distance to default, sector-aware Altman Z'' and EBITDA "
-           "interest cover for non-financial ASX companies. RED needs DD below 2 or two "
-           "signals red at once. Research tool, not a credit rating.")
+           "interest cover (normalised for one-offs) for non-financial ASX companies. RED needs DD below 2 or two "
+           "independent signals red at once; WATCH = one soft signal. Research tool, not a credit rating.")
 
 
 @st.cache_data(ttl=6 * 3600, show_spinner="Scoring watchlist...")
@@ -35,15 +35,17 @@ tickers = tuple(C.WATCHLIST + [t.strip().upper() for t in extra.split(",") if t.
 df = pd.read_csv(DATA / "latest.csv") if use_saved else load(tickers)
 
 # --- KPI row
-c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Companies", len(df))
 c2.metric("RED", int((df.status == "RED").sum()))
 c3.metric("AMBER", int((df.status == "AMBER").sum()))
-c4.metric("Median DD", f"{df.distance_to_default.median():.2f}")
+c4.metric("WATCH", int((df.status == "WATCH").sum()))
+c5.metric("Median DD", f"{df.distance_to_default.median():.2f}")
 
 # --- Filters and table
 sectors = st.multiselect("Sector", sorted(df.sector.dropna().unique()))
-status = st.multiselect("Status", ["RED", "AMBER", "GREEN", "N/A"], default=["RED", "AMBER"])
+status = st.multiselect("Status", ["RED", "AMBER", "WATCH", "GREEN", "N/A"],
+                        default=["RED", "AMBER"])
 view = df.copy()
 if sectors:
     view = view[view.sector.isin(sectors)]
@@ -51,6 +53,7 @@ if status:
     view = view[view.status.isin(status)]
 
 COLORS = {"RED": "background-color:#f8d7da", "AMBER": "background-color:#fff3cd",
+          "WATCH": "background-color:#e2e3f3",
           "GREEN": "background-color:#d1e7dd"}
 cols = ["ticker", "name", "sector", "status", "reasons", "data_issues",
         "distance_to_default", "pd_1y", "altman_z2", "ebitda_coverage", "ebit_coverage",
@@ -67,7 +70,7 @@ st.dataframe(
 # --- Cross-section chart
 fig = px.scatter(df.dropna(subset=["altman_z2"]), x="altman_z2", y="distance_to_default", color="status",
                  size="market_cap_bn", hover_name="ticker",
-                 color_discrete_map={"RED": "#c0392b", "AMBER": "#e6a700",
+                 color_discrete_map={"RED": "#c0392b", "AMBER": "#e6a700", "WATCH": "#6c71c4",
                                      "GREEN": "#2e8b57", "N/A": "#999"},
                  labels={"altman_z2": "Altman Z''", "distance_to_default": "Distance to default"})
 fig.add_hline(y=C.THRESHOLDS["distance_to_default"][0], line_dash="dot")

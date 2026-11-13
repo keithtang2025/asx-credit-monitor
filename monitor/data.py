@@ -36,11 +36,15 @@ def fx_rate(from_ccy: str, to_ccy: str = "AUD") -> float:
 
 
 def fetch_company(ticker: str, period: str = "2y") -> dict:
+    from .config import TICKER_ALIASES
+    requested = ticker
+    ticker = TICKER_ALIASES.get(ticker, ticker)
     t = yf.Ticker(ticker)
-    info = t.info or {}
     prices = t.history(period=period, auto_adjust=False)["Close"]
     if prices.empty:
-        raise ValueError(f"No price history for {ticker}")
+        raise ValueError(f"No price history for {ticker}; it may be delisted or "
+                         f"renamed (add the new code to TICKER_ALIASES)")
+    info = t.info or {}
     prices.index = prices.index.tz_localize(None)
 
     bs, inc = t.balance_sheet, t.income_stmt
@@ -51,8 +55,19 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
     g = lambda df, names: _first(df, names) * fx
     shares = info.get("sharesOutstanding") or g(bs, ["Ordinary Shares Number", "Share Issued"]) / fx
 
+    ebit_rep = g(inc, ["EBIT", "Operating Income"])
+    ebitda_rep = g(inc, ["EBITDA"])
+    unusual = g(inc, ["Total Unusual Items", "Total Unusual Items Excluding Goodwill"])
+    ebitda_norm = g(inc, ["Normalized EBITDA"])
+    if np.isnan(ebitda_norm):
+        ebitda_norm = ebitda_rep - unusual if not np.isnan(unusual) else ebitda_rep
+    # Yahoo reports unusual items with their P&L sign (losses negative),
+    # so subtracting them adds back impairments and restructuring charges.
+    ebit_norm = ebit_rep - unusual if not np.isnan(unusual) else ebit_rep
+
     return {
         "ticker": ticker,
+        "requested_ticker": requested,
         "name": info.get("shortName", ticker),
         "sector": info.get("sector", "Unknown"),
         "industry": info.get("industry", ""),
@@ -71,8 +86,11 @@ def fetch_company(ticker: str, period: str = "2y") -> dict:
         "working_capital": g(bs, ["Working Capital"]),
         "retained_earnings": g(bs, ["Retained Earnings"]),
         "book_equity": g(bs, ["Stockholders Equity", "Common Stock Equity"]),
-        "ebit": g(inc, ["EBIT", "Operating Income"]),
-        "ebitda": g(inc, ["EBITDA", "Normalized EBITDA"]),
+        "ebit": ebit_norm,
+        "ebitda": ebitda_norm,
+        "ebit_reported": ebit_rep,
+        "ebitda_reported": ebitda_rep,
+        "unusual_items": unusual,
         "interest_expense": g(inc, ["Interest Expense", "Interest Expense Non Operating"]),
         "statement_date": str(bs.columns[0].date()) if bs is not None and not bs.empty else None,
     }

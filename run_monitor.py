@@ -55,10 +55,15 @@ def main():
     print("\n=== Watchlist status ===")
     print(df["status"].value_counts().to_string())
     alerts = df[df["status"].isin(["RED", "AMBER"])]
+    watch = df[df["status"] == "WATCH"]
     if len(alerts):
         print("\n=== Alerts ===")
         print(alerts[["ticker", "name", "status", "distance_to_default", "pd_1y",
                       "reasons"]].to_string(index=False, float_format="%.3f"))
+    if len(watch):
+        print("\n=== Watch list (single soft signal) ===")
+        print(watch[["ticker", "name", "distance_to_default", "reasons"]]
+              .to_string(index=False, float_format="%.2f"))
     dq = df[df["data_issues"].astype(str).str.len() > 0]
     if len(dq):
         print("\n=== Data quality checks (verify against annual reports) ===")

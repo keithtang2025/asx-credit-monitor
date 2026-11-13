@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from monitor.engine import run_watchlist, score_company, z_applies
-from monitor.models import _bs_equity, altman_z2, merton_kmv, rag, status_v2
+from monitor.engine import coverage_thresholds, run_watchlist, score_company, z_applies
+from monitor.models import _bs_equity, altman_z2, merton_kmv, rag, status_v2, status_v3
 
 
 def simulate_equity(V0, D, sigma_v, r=0.04, T=1.0, n=252, seed=0):
@@ -96,8 +96,63 @@ def test_one_off_ebit_flag_and_data_issues():
            "interest_expense": 2.0, "statement_date": "2020-06-30",
            "statement_currency": "USD"}
     out = score_company(rec)
-    assert "likely one-offs" in out["reasons"]
+    assert "one-off items" in out["reasons"]
+    assert out["one_off_affected"]
     assert out["flag_cov"] == "GREEN"          # 12.5x EBITDA cover
     assert "retained_earnings" in out["data_issues"]
     assert "months old" in out["data_issues"]
     assert "converted from USD" in out["data_issues"]
+
+
+# ---- v3 rules, using patterns from the first live runs ----
+
+def test_v3_single_grey_zone_is_watch():          # e.g. Xero: Z'' 2.13 only
+    assert status_v3("GREEN", "AMBER", "GREEN", "GREEN")[0] == "WATCH"
+
+
+def test_v3_drawdown_alone_is_watch():            # e.g. Pilbara: drawdown 58% only
+    assert status_v3("GREEN", "GREEN", "GREEN", "AMBER")[0] == "WATCH"
+
+
+def test_v3_drawdown_plus_accounting_is_amber():  # e.g. Nickel Industries
+    assert status_v3("GREEN", "AMBER", "GREEN", "AMBER")[0] == "AMBER"
+
+
+def test_v3_dd_amber_is_amber():                  # e.g. NEXTDC, Lendlease
+    assert status_v3("AMBER", "GREEN", "GREEN", "GREEN")[0] == "AMBER"
+
+
+def test_v3_shared_cause_counts_once():           # e.g. Treasury Wine impairment
+    assert status_v3("GREEN", "RED", "RED", "GREEN", shared_cause=False)[0] == "RED"
+    status, n = status_v3("GREEN", "RED", "RED", "GREEN", shared_cause=True)
+    assert status == "AMBER" and n == 1
+
+
+def test_v3_independent_reds_still_red():         # e.g. Star: DD amber, Z'' and cover red
+    assert status_v3("AMBER", "RED", "RED", "GREEN")[0] == "RED"
+
+
+def test_sector_coverage_thresholds():
+    assert coverage_thresholds({"ticker": "TCL.AX", "industry": "", "sector": ""}) == (1.5, 2.5)
+    assert coverage_thresholds({"ticker": "X.AX", "industry": "REIT - Retail",
+                                "sector": "Real Estate"}) == (1.75, 2.75)
+    assert coverage_thresholds({"ticker": "X.AX", "industry": "Steel",
+                                "sector": "Basic Materials"}) == (2.0, 4.0)
+
+
+def test_normalised_coverage_avoids_false_red():
+    """Reported EBIT/EBITDA hit by an impairment; normalised figures are healthy."""
+    E, _ = simulate_equity(100, 10, 0.2, seed=5)
+    rec = {"ticker": "IMP.AX", "name": "Imp", "sector": "Consumer Defensive",
+           "industry": "Beverages", "prices": E / 10, "market_cap_series": E,
+           "short_term_debt": 5.0, "long_term_debt": 20.0, "total_debt": 25.0,
+           "cash": 2.0, "total_assets": 150.0, "total_liabilities": 50.0,
+           "working_capital": 15.0, "retained_earnings": 30.0, "book_equity": 100.0,
+           "ebit": 18.0, "ebitda": 24.0,                  # normalised
+           "ebit_reported": -12.0, "ebitda_reported": -6.0, "unusual_items": -30.0,
+           "interest_expense": 2.0, "statement_date": "2026-06-30",
+           "statement_currency": "AUD"}
+    out = score_company(rec)
+    assert out["flag_cov"] == "GREEN"        # 12x on normalised EBITDA
+    assert out["one_off_affected"]
+    assert out["status"] in ("GREEN", "WATCH")

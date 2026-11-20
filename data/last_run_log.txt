@@ -261,164 +261,169 @@ Running ASX credit monitor...
 
 === Watchlist status ===
 status
-GREEN    109
-WATCH    105
-AMBER     34
+WATCH    109
+GREEN    104
+AMBER     35
 RED        9
 
 === Alerts ===
 ticker                     name status    DD  pd_1y                                                                                                                                                                                     reasons
-MGH.AX     MAAS GROUP FPO [MGH]    RED  1.84  0.033                                                                       DD 1.84 (RED); Z'' 1.75 (AMBER); EBITDA cover 1.5x latest (RED); earnings falling: EBITDA 54% of 3y avg; drawdown 51%
-LLC.AX LEND LEASE STAPLED [LLC]    RED  1.98  0.024                                                                                                                        DD 1.98 (RED); drawdown 67%; one-off items -351m (ratios normalised)
-SGR.AX       STAR ENT FPO [SGR]    RED  2.75  0.003                                                                       DD 2.75 (AMBER); Z'' -10.69 (RED); loss-making: cash runway 8 months (RED); one-off items -1,439m (ratios normalised)
-AEL.AX      AMPLITUDE FPO [AEL]    RED  2.89  0.002                                                                       DD 2.89 (AMBER); Z'' 0.27 (RED); EBITDA cover -0.6x 3y avg (RED); drawdown 50%; one-off items -0m (ratios normalised)
-NEC.AX       NINE ENT FPO [NEC]    RED  4.15  0.000          Z'' -0.52 (RED); loss-making: cash runway 2 months (RED); CHECK DATA: market (DD 4.2) sees less risk than the accounts; earnings falling: EBITDA turned negative (3y avg positive)
-PDN.AX        PALADIN FPO [PDN]    RED  4.25  0.000                                                                  Z'' 0.24 (RED); EBITDA cover 0.4x 3y avg (RED); CHECK DATA: market (DD 4.2) sees less risk than the accounts; drawdown 57%
-TLX.AX     TELIXPHARM FPO [TLX]    RED  4.97  0.000 Z'' 0.81 (RED); EBITDA cover 0.6x latest (RED); CHECK DATA: market (DD 5.0) sees less risk than the accounts; earnings falling: EBITDA 57% of 3y avg; one-off items 16m (ratios normalised)
-MSB.AX      MESOBLAST FPO [MSB]    RED  5.10  0.000                                                        Z'' -1.05 (RED); loss-making: cash runway 8 months (RED); CHECK DATA: market (DD 5.1) sees less risk than the accounts; drawdown 44%
-IMR.AX  IMRICOR CDI FORUS [IMR]    RED  9.32  0.000                                                      Z'' -11.39 (RED); loss-making: cash runway 10 months (RED); CHECK DATA: market (DD 9.3) sees less risk than the accounts; drawdown 40%
-AXQ.AX AURACONGRP CDI 1:1 [AXQ]  AMBER  2.07  0.019                                                                                                                      DD 2.07 (AMBER); loss-making: cash runway 5 months (RED); drawdown 57%
-NXT.AX         NEXTDC FPO [NXT]  AMBER  2.30  0.011                                                                                                           DD 2.30 (AMBER); Z'' 1.82 (AMBER); EBITDA cover 3.0x latest (AMBER); drawdown 41%
-ELV.AX     ELEVRA LTH FPO [ELV]  AMBER  2.51  0.006                                                                                                                        DD 2.51 (AMBER); drawdown 76%; one-off items 72m (ratios normalised)
-CIA.AX     CHAMP IRON FPO [CIA]  AMBER  2.57  0.005                                                                                                                                                               DD 2.57 (AMBER); drawdown 74%
-LTR.AX       LIONTOWN FPO [LTR]  AMBER  2.61  0.005                                                                                                                                                               DD 2.61 (AMBER); drawdown 78%
-IEL.AX            IEL FPO [IEL]  AMBER  2.76  0.003                                                                                                                                             DD 2.76 (AMBER); Z'' 1.70 (AMBER); drawdown 61%
-DGT.AX DIGICO INF STAPLED [DGT]  AMBER  2.81  0.002                                                                                                                                                        DD 2.81 (AMBER); gearing 39% (AMBER)
-VGN.AX     VIRGIN AUS FPO [VGN]  AMBER  3.02  0.001                                                                                                                                                                             DD 3.02 (AMBER)
-KAR.AX         KAROON FPO [KAR]  AMBER  3.18  0.001                                                                                                                                                           DD 3.18 (AMBER); Z'' 2.16 (AMBER)
-APE.AX         EAGERS FPO [APE]  AMBER  3.25  0.001                                                                                                                                             DD 3.25 (AMBER); Z'' 1.85 (AMBER); drawdown 52%
-VSL.AX       VULCAN S FPO [VSL]  AMBER  3.39  0.000                                                                                                                                                                             DD 3.39 (AMBER)
-MIN.AX     MINERALRES FPO [MIN]  AMBER  3.39  0.000                                                                                                                                                               DD 3.39 (AMBER); drawdown 47%
-EQR.AX         EQ RES FPO [EQR]  AMBER  3.42  0.000                                                                                                            DD 3.42 (AMBER); Z'' 1.59 (AMBER); EBITDA cover -0.0x 3y avg (RED); drawdown 49%
-TPW.AX     TEMPLE WEB FPO [TPW]  AMBER  3.48  0.000                                                                                                                                                               DD 3.48 (AMBER); drawdown 68%
-NIC.AX     NICKLINDUS FPO [NIC]  AMBER  3.58  0.000                                                                                                                            Z'' 2.16 (AMBER); EBITDA cover 2.7x 3y avg (AMBER); drawdown 48%
-VEA.AX     VIVA E GRP FPO [VEA]  AMBER  3.64  0.000                                                                                                   Z'' 0.30 (RED); EBITDA cover 2.4x 3y avg (AMBER); one-off items -560m (ratios normalised)
-CSC.AX   CAPSTONE CDI 1:1 [CSC]  AMBER  3.71  0.000                                                                                                                                                              Z'' 1.91 (AMBER); drawdown 48%
-WTC.AX       WISETECH FPO [WTC]  AMBER  3.79  0.000                                                                                                                                          Z'' 1.88 (AMBER); EBITDA cover 2.6x latest (AMBER)
-ING.AX        INGHAMS FPO [ING]  AMBER  3.94  0.000                                                                                                                                            Z'' 0.74 (RED); EBITDA cover 3.3x 3y avg (AMBER)
-GNC.AX      GRAINCORP FPO [GNC]  AMBER  4.14  0.000                                                        EBITDA cover 2.0x 3y avg (RED); CHECK DATA: market (DD 4.1) sees less risk than the accounts; earnings falling: EBITDA 13% of 3y avg
-NUF.AX         NUFARM FPO [NUF]  AMBER  4.42  0.000                  Z'' 1.86 (AMBER); EBITDA cover 0.7x 3y avg (RED); CHECK DATA: market (DD 4.4) sees less risk than the accounts; earnings falling: EBITDA turned negative (3y avg positive)
-CBO.AX         COBRAM FPO [CBO]  AMBER  4.44  0.000                                                           Z'' 1.95 (AMBER); EBITDA cover 3.3x 3y avg (AMBER); earnings falling: EBITDA 32% of 3y avg; one-off items -6m (ratios normalised)
-NCK.AX     NICK SCALI FPO [NCK]  AMBER  4.50  0.000                                                                                                                                                              Z'' 2.44 (AMBER); drawdown 50%
-AAI.AX ALCOA CORP CDI 1:1 [AAI]  AMBER  4.50  0.000                                                                                                                      Z'' 1.59 (AMBER); drawdown 54%; one-off items 702m (ratios normalised)
-SHV.AX         SELECT FPO [SHV]  AMBER  5.13  0.000                                                                             Z'' 2.59 (AMBER); EBITDA cover -1.6x 3y avg (RED); CHECK DATA: market (DD 5.1) sees less risk than the accounts
-RIC.AX         RIDLEY FPO [RIC]  AMBER  5.14  0.000                                                                                                    Z'' 0.85 (RED); EBITDA cover 3.9x latest (AMBER); one-off items -37m (ratios normalised)
-XRO.AX           XERO FPO [XRO]  AMBER  5.18  0.000                                                                                                                                          Z'' 1.74 (AMBER); EBITDA cover 2.2x latest (AMBER)
-PXA.AX      PEXAGROUP FPO [PXA]  AMBER  5.31  0.000                                                                                                                                                              Z'' 2.50 (AMBER); drawdown 58%
-TWE.AX      TREA WINE FPO [TWE]  AMBER  5.31  0.000                                       Z'' 1.66 (AMBER); EBITDA cover 1.0x latest (RED); CHECK DATA: market (DD 5.3) sees less risk than the accounts; one-off items n/a (ratios normalised)
-MMS.AX       MCMILLAN FPO [MMS]  AMBER  5.87  0.000                                                                                                                                            Z'' 0.99 (RED); EBITDA cover 3.2x latest (AMBER)
-EDV.AX      ENDEAVOUR FPO [EDV]  AMBER  6.40  0.000                                                                                                                    EBITDA cover 3.9x latest (AMBER); earnings falling: EBITDA 56% of 3y avg
-CKF.AX     COLLINS FD FPO [CKF]  AMBER  6.60  0.000                                                                                                                                            Z'' 0.11 (RED); EBITDA cover 2.3x latest (AMBER)
-CNU.AX     CHORUS FPO NZX [CNU]  AMBER  7.98  0.000                                                                                                                                            Z'' 0.19 (RED); EBITDA cover 3.3x latest (AMBER)
-PMT.AX   PMETRES CDI 10:1 [PMT]  AMBER 10.26  0.000                                                                                                                    earnings falling: EBITDA turned negative (3y avg positive); drawdown 66%
+MGH.AX     MAAS GROUP FPO [MGH]    RED  1.74  0.041                                                                       DD 1.74 (RED); Z'' 1.75 (AMBER); EBITDA cover 1.5x latest (RED); earnings falling: EBITDA 54% of 3y avg; drawdown 54%
+LLC.AX LEND LEASE STAPLED [LLC]    RED  1.88  0.030                                                                                                                        DD 1.88 (RED); drawdown 69%; one-off items -351m (ratios normalised)
+SGR.AX       STAR ENT FPO [SGR]    RED  2.70  0.003                                                                       DD 2.70 (AMBER); Z'' -10.69 (RED); loss-making: cash runway 8 months (RED); one-off items -1,439m (ratios normalised)
+AEL.AX      AMPLITUDE FPO [AEL]    RED  2.85  0.002                                                                       DD 2.85 (AMBER); Z'' 0.27 (RED); EBITDA cover -0.6x 3y avg (RED); drawdown 52%; one-off items -0m (ratios normalised)
+NEC.AX       NINE ENT FPO [NEC]    RED  4.10  0.000          Z'' -0.52 (RED); loss-making: cash runway 2 months (RED); CHECK DATA: market (DD 4.1) sees less risk than the accounts; earnings falling: EBITDA turned negative (3y avg positive)
+PDN.AX        PALADIN FPO [PDN]    RED  4.34  0.000                                                                  Z'' 0.24 (RED); EBITDA cover 0.4x 3y avg (RED); CHECK DATA: market (DD 4.3) sees less risk than the accounts; drawdown 60%
+TLX.AX     TELIXPHARM FPO [TLX]    RED  4.95  0.000 Z'' 0.81 (RED); EBITDA cover 0.6x latest (RED); CHECK DATA: market (DD 4.9) sees less risk than the accounts; earnings falling: EBITDA 57% of 3y avg; one-off items 16m (ratios normalised)
+MSB.AX      MESOBLAST FPO [MSB]    RED  5.09  0.000                                                        Z'' -1.05 (RED); loss-making: cash runway 8 months (RED); CHECK DATA: market (DD 5.1) sees less risk than the accounts; drawdown 45%
+IMR.AX  IMRICOR CDI FORUS [IMR]    RED  9.36  0.000                                                                    Z'' -11.39 (RED); loss-making: cash runway 10 months (RED); CHECK DATA: market (DD 9.4) sees less risk than the accounts
+AXQ.AX AURACONGRP CDI 1:1 [AXQ]  AMBER  2.02  0.022                                                                                                                      DD 2.02 (AMBER); loss-making: cash runway 5 months (RED); drawdown 60%
+NXT.AX         NEXTDC FPO [NXT]  AMBER  2.19  0.014                                                                                                           DD 2.19 (AMBER); Z'' 1.82 (AMBER); EBITDA cover 3.0x latest (AMBER); drawdown 45%
+ELV.AX     ELEVRA LTH FPO [ELV]  AMBER  2.53  0.006                                                                                                                        DD 2.53 (AMBER); drawdown 75%; one-off items 72m (ratios normalised)
+LTR.AX       LIONTOWN FPO [LTR]  AMBER  2.56  0.005                                                                                                                                                               DD 2.56 (AMBER); drawdown 79%
+CIA.AX     CHAMP IRON FPO [CIA]  AMBER  2.60  0.005                                                                                                                                                               DD 2.60 (AMBER); drawdown 74%
+DGT.AX DIGICO INF STAPLED [DGT]  AMBER  2.77  0.003                                                                                                                                                        DD 2.77 (AMBER); gearing 39% (AMBER)
+IEL.AX            IEL FPO [IEL]  AMBER  2.82  0.002                                                                                                                                             DD 2.82 (AMBER); Z'' 1.70 (AMBER); drawdown 59%
+VGN.AX     VIRGIN AUS FPO [VGN]  AMBER  3.05  0.001                                                                                                                                                                             DD 3.05 (AMBER)
+KAR.AX         KAROON FPO [KAR]  AMBER  3.13  0.001                                                                                                                                                           DD 3.13 (AMBER); Z'' 2.16 (AMBER)
+APE.AX         EAGERS FPO [APE]  AMBER  3.22  0.001                                                                                                                                             DD 3.22 (AMBER); Z'' 1.85 (AMBER); drawdown 53%
+EQR.AX         EQ RES FPO [EQR]  AMBER  3.33  0.000                                                                                                            DD 3.33 (AMBER); Z'' 1.59 (AMBER); EBITDA cover -0.0x 3y avg (RED); drawdown 53%
+MIN.AX     MINERALRES FPO [MIN]  AMBER  3.33  0.000                                                                                                                                                               DD 3.33 (AMBER); drawdown 48%
+TPW.AX     TEMPLE WEB FPO [TPW]  AMBER  3.48  0.000                                                                                                                                                               DD 3.48 (AMBER); drawdown 69%
+NIC.AX     NICKLINDUS FPO [NIC]  AMBER  3.49  0.000                                                                                                           DD 3.49 (AMBER); Z'' 2.16 (AMBER); EBITDA cover 2.7x 3y avg (AMBER); drawdown 50%
+WEB.AX        WEBBEDS FPO [WEB]  AMBER  3.49  0.000                                                                                                                                                                             DD 3.49 (AMBER)
+VEA.AX     VIVA E GRP FPO [VEA]  AMBER  3.55  0.000                                                                                                   Z'' 0.30 (RED); EBITDA cover 2.4x 3y avg (AMBER); one-off items -560m (ratios normalised)
+CSC.AX   CAPSTONE CDI 1:1 [CSC]  AMBER  3.66  0.000                                                                                                                                                              Z'' 1.91 (AMBER); drawdown 50%
+WTC.AX       WISETECH FPO [WTC]  AMBER  3.73  0.000                                                                                                                                          Z'' 1.88 (AMBER); EBITDA cover 2.6x latest (AMBER)
+DVP.AX        DEVELOP FPO [DVP]  AMBER  3.76  0.000                                                                                                                                                              Z'' 2.55 (AMBER); drawdown 64%
+ING.AX        INGHAMS FPO [ING]  AMBER  3.99  0.000                                                                                                                                            Z'' 0.74 (RED); EBITDA cover 3.3x 3y avg (AMBER)
+GNC.AX      GRAINCORP FPO [GNC]  AMBER  4.09  0.000                                                        EBITDA cover 2.0x 3y avg (RED); CHECK DATA: market (DD 4.1) sees less risk than the accounts; earnings falling: EBITDA 13% of 3y avg
+NUF.AX         NUFARM FPO [NUF]  AMBER  4.16  0.000                  Z'' 1.86 (AMBER); EBITDA cover 0.7x 3y avg (RED); CHECK DATA: market (DD 4.2) sees less risk than the accounts; earnings falling: EBITDA turned negative (3y avg positive)
+CBO.AX         COBRAM FPO [CBO]  AMBER  4.40  0.000                                             Z'' 1.95 (AMBER); EBITDA cover 3.3x 3y avg (AMBER); earnings falling: EBITDA 32% of 3y avg; drawdown 40%; one-off items -6m (ratios normalised)
+NCK.AX     NICK SCALI FPO [NCK]  AMBER  4.43  0.000                                                                                                                                                              Z'' 2.44 (AMBER); drawdown 51%
+AAI.AX ALCOA CORP CDI 1:1 [AAI]  AMBER  4.49  0.000                                                                                                                      Z'' 1.59 (AMBER); drawdown 55%; one-off items 705m (ratios normalised)
+XRO.AX           XERO FPO [XRO]  AMBER  5.03  0.000                                                                                                                                          Z'' 1.74 (AMBER); EBITDA cover 2.2x latest (AMBER)
+SHV.AX         SELECT FPO [SHV]  AMBER  5.11  0.000                                                                             Z'' 2.59 (AMBER); EBITDA cover -1.6x 3y avg (RED); CHECK DATA: market (DD 5.1) sees less risk than the accounts
+RIC.AX         RIDLEY FPO [RIC]  AMBER  5.17  0.000                                                                                                    Z'' 0.85 (RED); EBITDA cover 3.9x latest (AMBER); one-off items -37m (ratios normalised)
+TWE.AX      TREA WINE FPO [TWE]  AMBER  5.25  0.000                                       Z'' 1.66 (AMBER); EBITDA cover 1.0x latest (RED); CHECK DATA: market (DD 5.2) sees less risk than the accounts; one-off items n/a (ratios normalised)
+PXA.AX      PEXAGROUP FPO [PXA]  AMBER  5.33  0.000                                                                                                                                                              Z'' 2.50 (AMBER); drawdown 58%
+MMS.AX       MCMILLAN FPO [MMS]  AMBER  5.78  0.000                                                                                                                                            Z'' 0.99 (RED); EBITDA cover 3.2x latest (AMBER)
+EDV.AX      ENDEAVOUR FPO [EDV]  AMBER  6.34  0.000                                                                                                                    EBITDA cover 3.9x latest (AMBER); earnings falling: EBITDA 56% of 3y avg
+CKF.AX     COLLINS FD FPO [CKF]  AMBER  6.57  0.000                                                                                                                                            Z'' 0.11 (RED); EBITDA cover 2.3x latest (AMBER)
+CNU.AX     CHORUS FPO NZX [CNU]  AMBER  7.91  0.000                                                                                                                                            Z'' 0.19 (RED); EBITDA cover 3.3x latest (AMBER)
+PMT.AX   PMETRES CDI 10:1 [PMT]  AMBER 10.21  0.000                                                                                                                    earnings falling: EBITDA turned negative (3y avg positive); drawdown 67%
 
 === Watch list (single soft signal) ===
 ticker                       name      DD                                                                reasons
-LNW.AX   LIGHT & WO CDI 1:1 [LNW]    3.65                                                       Z'' 2.12 (AMBER)
-KCN.AX        KINGSGATE FPO [KCN]    3.84                                                           drawdown 51%
-DVP.AX          DEVELOP FPO [DVP]    3.89                                                           drawdown 61%
-ASB.AX       AUSTAL LTD FPO [ASB]    3.92        funding risk (cash covers debt): runway 22 months; drawdown 51%
-TAH.AX          TABCORP FPO [TAH]    3.96 Z'' 0.01 (RED); one-offs suspected but not adjustable (signals merged)
-MAH.AX         MACMAHON FPO [MAH]    4.12                                                       Z'' 2.51 (AMBER)
-BGL.AX         BELLEVUE FPO [BGL]    4.13                                                       Z'' 2.50 (AMBER)
-360.AX      LIFE360 CDI 3:1 [360]    4.14                                                           drawdown 47%
-BC8.AX        BLACK CAT FPO [BC8]    4.22                                                           drawdown 65%
-PNR.AX          PANTORO FPO [PNR]    4.22                                                           drawdown 48%
+LNW.AX   LIGHT & WO CDI 1:1 [LNW]    3.62                                                       Z'' 2.12 (AMBER)
+KCN.AX        KINGSGATE FPO [KCN]    3.87                                                           drawdown 51%
+ASB.AX       AUSTAL LTD FPO [ASB]    3.88        funding risk (cash covers debt): runway 22 months; drawdown 52%
+TAH.AX          TABCORP FPO [TAH]    3.95 Z'' 0.01 (RED); one-offs suspected but not adjustable (signals merged)
+MAH.AX         MACMAHON FPO [MAH]    3.97                                                       Z'' 2.51 (AMBER)
+360.AX      LIFE360 CDI 3:1 [360]    4.03                                                           drawdown 51%
+BGL.AX         BELLEVUE FPO [BGL]    4.04                                                       Z'' 2.50 (AMBER)
+BC8.AX        BLACK CAT FPO [BC8]    4.15                                                           drawdown 67%
+PNR.AX          PANTORO FPO [PNR]    4.17                                                           drawdown 51%
 OML.AX         OOHMEDIA FPO [OML]    4.26                                                         Z'' 0.68 (RED)
-CXO.AX         CORE EXP FPO [CXO]    4.34                  drawdown 45%; one-off items -120m (ratios normalised)
-VUL.AX         VULCAN E FPO [VUL]    4.38                                                           drawdown 81%
-PLS.AX         PLSGROUP FPO [PLS]    4.56                                                           drawdown 62%
-DMP.AX          DOMINOS FPO [DMP]    4.56                Z'' 0.86 (RED); one-off items -201m (ratios normalised)
-4DX.AX        4DMEDICAL FPO [4DX]    4.71                                                           drawdown 67%
-IDX.AX       INTEG DIAG FPO [IDX]    4.79                                                         Z'' 0.95 (RED)
-CYL.AX       CAT METALS FPO [CYL]    4.91                                                           drawdown 60%
-EOS.AX       ELEC OPTIC FPO [EOS]    4.93                                                           drawdown 43%
+CXO.AX         CORE EXP FPO [CXO]    4.36                  drawdown 45%; one-off items -120m (ratios normalised)
+VUL.AX         VULCAN E FPO [VUL]    4.39                                                           drawdown 80%
+PRN.AX          PERENTI FPO [PRN]    4.46                                                           drawdown 46%
+DMP.AX          DOMINOS FPO [DMP]    4.55                Z'' 0.86 (RED); one-off items -201m (ratios normalised)
+PLS.AX         PLSGROUP FPO [PLS]    4.59                                                           drawdown 61%
+4DX.AX        4DMEDICAL FPO [4DX]    4.66                                                           drawdown 68%
+IDX.AX       INTEG DIAG FPO [IDX]    4.84                                                         Z'' 0.95 (RED)
+CYL.AX       CAT METALS FPO [CYL]    4.86                                                           drawdown 62%
+EOS.AX       ELEC OPTIC FPO [EOS]    4.87                                                           drawdown 46%
 ELD.AX           ELDERS FPO [ELD]    4.93                                                         Z'' 1.01 (RED)
 AOV.AX           AMOTIV FPO [AOV]    5.00   drawdown 46%; one-offs suspected but not adjustable (signals merged)
-DRO.AX            DRONE FPO [DRO]    5.14                                                           drawdown 77%
-IPH.AX       IPHLIMITED FPO [IPH]    5.15                                                       Z'' 2.50 (AMBER)
-NXG.AX       NEXGEN CDI 1:1 [NXG]    5.21                  drawdown 45%; one-off items -103m (ratios normalised)
-GYG.AX        GUZ GOMEZ FPO [GYG]    5.23                                                       Z'' 1.77 (AMBER)
-SEK.AX             SEEK FPO [SEK]    5.33                  drawdown 47%; one-off items -292m (ratios normalised)
-LOV.AX           LOVISA FPO [LOV]    5.34                                                       Z'' 1.91 (AMBER)
-WOR.AX           WORLEY FPO [WOR]    5.44                                                       Z'' 1.41 (AMBER)
-KLS.AX          KELSIAN FPO [KLS]    5.51                                                       Z'' 1.29 (AMBER)
-IPX.AX         IPERIONX FPO [IPX]    5.55         funding risk (cash covers debt): runway 7 months; drawdown 79%
-TUA.AX         TUAS LTD FPO [TUA]    5.58                                                           drawdown 82%
-JHX.AX     J HARDIE CDI 1:1 [JHX]    5.75                                                       Z'' 2.04 (AMBER)
-ABG.AX       ABACUS STAPLED [ABG]    5.76            gearing 38% (AMBER); one-off items -14m (ratios normalised)
-SUL.AX       SUPARETAIL FPO [SUL]    5.78                                                       Z'' 1.19 (AMBER)
-ACL.AX       AUCLINICAL FPO [ACL]    5.80                                                         Z'' 0.89 (RED)
-TEA.AX           TASMEA FPO [TEA]    6.16                                                       Z'' 2.26 (AMBER)
-SGM.AX       SIMS METAL FPO [SGM]    6.18                                                       Z'' 2.35 (AMBER)
-NWH.AX       NRWHOLDLTD FPO [NWH]    6.24                                                       Z'' 1.96 (AMBER)
-RHC.AX           RAMSAY FPO [RHC]    6.27                                                         Z'' 0.91 (RED)
-EBO.AX          EBOS FPO NZ [EBO]    6.29                                                       Z'' 1.49 (AMBER)
-ALD.AX            AMPOL FPO [ALD]    6.43                                                       Z'' 1.40 (AMBER)
-IFT.AX     INFRATIL FPO NZX [IFT]    6.48                                                         Z'' 1.07 (RED)
-COH.AX         COCHLEAR FPO [COH]    6.57                                                           drawdown 45%
-SKS.AX         SKS TECH FPO [SKS]    6.63                                                           drawdown 51%
-FBU.AX    FLETBUILD FPO NZX [FBU]    6.68                                                       Z'' 1.90 (AMBER)
-AMC.AX    AMCOR PLC CDI 1:1 [AMC]    6.75                                                       Z'' 1.26 (AMBER)
-SLC.AX        SUPERLOOP FPO [SLC]    6.80                                                         Z'' 0.39 (RED)
+IPH.AX       IPHLIMITED FPO [IPH]    5.10                                                       Z'' 2.50 (AMBER)
+NXG.AX       NEXGEN CDI 1:1 [NXG]    5.11                  drawdown 48%; one-off items -103m (ratios normalised)
+SEK.AX             SEEK FPO [SEK]    5.17                  drawdown 49%; one-off items -292m (ratios normalised)
+DRO.AX            DRONE FPO [DRO]    5.18                                                           drawdown 78%
+LOV.AX           LOVISA FPO [LOV]    5.18                                                       Z'' 1.91 (AMBER)
+GYG.AX        GUZ GOMEZ FPO [GYG]    5.21                                                       Z'' 1.77 (AMBER)
+WOR.AX           WORLEY FPO [WOR]    5.35                                                       Z'' 1.41 (AMBER)
+KLS.AX          KELSIAN FPO [KLS]    5.46                                                       Z'' 1.29 (AMBER)
+IPX.AX         IPERIONX FPO [IPX]    5.51         funding risk (cash covers debt): runway 7 months; drawdown 80%
+TUA.AX         TUAS LTD FPO [TUA]    5.59                                                           drawdown 82%
+ABG.AX       ABACUS STAPLED [ABG]    5.62            gearing 38% (AMBER); one-off items -14m (ratios normalised)
+JHX.AX     J HARDIE CDI 1:1 [JHX]    5.66                                                       Z'' 2.04 (AMBER)
+SUL.AX       SUPARETAIL FPO [SUL]    5.72                                                       Z'' 1.19 (AMBER)
+ACL.AX       AUCLINICAL FPO [ACL]    5.77                                                         Z'' 0.89 (RED)
+TEA.AX           TASMEA FPO [TEA]    5.86                                                       Z'' 2.26 (AMBER)
+NWH.AX       NRWHOLDLTD FPO [NWH]    6.09                                                       Z'' 1.96 (AMBER)
+EVN.AX        EVOLUTION FPO [EVN]    6.15                                                           drawdown 41%
+SGM.AX       SIMS METAL FPO [SGM]    6.20                                                       Z'' 2.35 (AMBER)
+EBO.AX          EBOS FPO NZ [EBO]    6.30                                                       Z'' 1.49 (AMBER)
+ALD.AX            AMPOL FPO [ALD]    6.30                                                       Z'' 1.40 (AMBER)
+HSN.AX       HANSEN TEC FPO [HSN]    6.44                                                           drawdown 41%
+IFT.AX     INFRATIL FPO NZX [IFT]    6.44                                                         Z'' 1.07 (RED)
+SKS.AX         SKS TECH FPO [SKS]    6.50                                                           drawdown 55%
+COH.AX         COCHLEAR FPO [COH]    6.52                                                           drawdown 47%
+FBU.AX    FLETBUILD FPO NZX [FBU]    6.57                                                       Z'' 1.90 (AMBER)
+AMC.AX    AMCOR PLC CDI 1:1 [AMC]    6.63                                                       Z'' 1.26 (AMBER)
+RHC.AX           RAMSAY FPO [RHC]    6.73                                                         Z'' 0.91 (RED)
+SLC.AX        SUPERLOOP FPO [SLC]    6.74                                                         Z'' 0.39 (RED)
 CWY.AX        CLEANAWAY FPO [CWY]    6.87                                                         Z'' 0.75 (RED)
-HVN.AX           HARVEY FPO [HVN]    6.99                                                           drawdown 41%
-PDI.AX          PDIGOLD FPO [PDI]    7.02                      funding risk (cash covers debt): runway 12 months
-BRE.AX       BRZLINRARE FPO [BRE]    7.03                                                           drawdown 73%
-WDS.AX         WOODSIDE FPO [WDS]    7.04                                                       Z'' 2.23 (AMBER)
-A4N.AX        ALPHA HPA FPO [A4N]    7.20                                                           drawdown 62%
-SHL.AX       SONIC HLTH FPO [SHL]    7.21                                                       Z'' 2.18 (AMBER)
-SDR.AX       SITEMINDER FPO [SDR]    7.22                     drawdown 49%; one-off items 0m (ratios normalised)
-GOZ.AX    GROWTHPRO STAPLED [GOZ]    7.25                                                    gearing 44% (AMBER)
-DNL.AX       DYNO NOBEL FPO [DNL]    7.27                                                       Z'' 2.53 (AMBER)
-DBI.AX    DALRYMPLE STAPLED [DBI]    7.38                                                    gearing 60% (AMBER)
-PMV.AX        PREM INV. FPO [PMV]    7.56                                 earnings falling: EBITDA 57% of 3y avg
-EVT.AX           EVTLTD FPO [EVT]    7.62                                                         Z'' 1.09 (RED)
-LYC.AX            LYNAS FPO [LYC]    7.62                                                           drawdown 42%
-CAT.AX         CATAPULT FPO [CAT]    7.63   drawdown 50%; one-offs suspected but not adjustable (signals merged)
-RFF.AX   RURALFUNDS STAPLED [RFF]    7.68                                                    gearing 42% (AMBER)
-GWA.AX        GWA GROUP FPO [GWA]    7.72                                                       Z'' 2.41 (AMBER)
-IRE.AX            IRESS FPO [IRE]    7.74                                                           drawdown 44%
-STO.AX           SANTOS FPO [STO]    7.76                                                       Z'' 1.65 (AMBER)
-MI6.AX       MINERAL260 FPO [MI6]    7.77                      funding risk (cash covers debt): runway 18 months
-DYL.AX         D YELLOW FPO [DYL]    7.80                                                           drawdown 77%
-FMG.AX        FORTESCUE FPO [FMG]    7.87                                                           drawdown 43%
-CHN.AX          CHALICE FPO [CHN]    7.88        funding risk (cash covers debt): runway 19 months; drawdown 65%
-AYA.AX           ARTRYA FPO [AYA]    8.15        funding risk (cash covers debt): runway 17 months; drawdown 59%
-ELS.AX          ELSIGHT FPO [ELS]    8.18                                                           drawdown 82%
-SLX.AX            SILEX FPO [SLX]    8.24                                                           drawdown 73%
-ABB.AX       AUSSIEBAND FPO [ABB]    8.28                                                       Z'' 2.17 (AMBER)
-WBT.AX       WEEBITNANO FPO [WBT]    8.29                                                           drawdown 72%
-SCG.AX      SCENTRE STAPLED [SCG]    8.31                                                    gearing 42% (AMBER)
-ORI.AX            ORICA FPO [ORI]    8.31                                                       Z'' 1.52 (AMBER)
-LIN.AX          LINDIAN FPO [LIN]    8.36                                                           drawdown 64%
-SRG.AX        SRGGLOBAL FPO [SRG]    8.37                                                       Z'' 1.82 (AMBER)
-HDN.AX HOMECO DNR ORD UNITS [HDN]    8.51                                                    gearing 36% (AMBER)
-SRL.AX          SUNRISE FPO [SRL]    8.69                                                           drawdown 59%
-SPK.AX     SPARK NZ FPO NZX [SPK]    8.75                                                       Z'' 2.35 (AMBER)
-GGP.AX        GREATLAND FPO [GGP]    8.89                                                           drawdown 41%
-DOW.AX       DOWNER EDI FPO [DOW]    8.95                                                         Z'' 0.93 (RED)
-ALQ.AX              ALS FPO [ALQ]    9.22                                                       Z'' 2.32 (AMBER)
-TPG.AX       TPGLIMITED FPO [TPG]    9.23                                                        Z'' -0.30 (RED)
-FFM.AX           FFMLTD FPO [FFM]    9.40                                                           drawdown 48%
-ARB.AX         ARB CORP FPO [ARB]    9.48                                                           drawdown 48%
-BGA.AX             BEGA FPO [BGA]   10.04                                                       Z'' 1.51 (AMBER)
-IGO.AX       IGOLIMITED FPO [IGO]   10.15                                                           drawdown 53%
-BNZ.AX   BENZMINING CDI 1:1 [BNZ]   10.19                      funding risk (cash covers debt): runway 24 months
-ARU.AX          ARAFURA FPO [ARU]   10.26                                                           drawdown 65%
-WA1.AX          WA1 RES FPO [WA1]   11.15                                                           drawdown 67%
-SSM.AX        SRVSTREAM FPO [SSM]   11.82                                                       Z'' 2.20 (AMBER)
-SMI.AX       SANTANAMIN FPO [SMI]   12.42                                                           drawdown 61%
-TCL.AX   TRANSURBAN STAPLED [TCL]   12.53                                                    gearing 59% (AMBER)
-TLC.AX          LOTTERY FPO [TLC]   12.74                                                        Z'' -0.48 (RED)
-WES.AX        WESFARMER FPO [WES]   13.11                                                       Z'' 1.80 (AMBER)
-CUV.AX         CLINUVEL FPO [CUV]   13.26                                                           drawdown 45%
-SX2.AX   SOUTHGOLD2 CDI 1:1 [SX2]   13.29                                                           drawdown 45%
-TCG.AX       TURACOGOLD FPO [TCG]   13.79                      funding risk (cash covers debt): runway 23 months
-TLS.AX          TELSTRA FPO [TLS]   14.20                                                         Z'' 1.07 (RED)
-PYC.AX       PYC THERAP FPO [PYC]   14.62         funding risk (cash covers debt): runway 8 months; drawdown 44%
-CU6.AX       CLARITY PH FPO [CU6] no debt         funding risk (cash covers debt): runway 6 months; drawdown 54%
-EIQ.AX        ECHOIQLTD FPO [EIQ] no debt         funding risk (cash covers debt): runway 5 months; drawdown 84%
+HVN.AX           HARVEY FPO [HVN]    6.91                                                           drawdown 42%
+PDI.AX          PDIGOLD FPO [PDI]    6.93                      funding risk (cash covers debt): runway 12 months
+A4N.AX        ALPHA HPA FPO [A4N]    6.95                                                           drawdown 67%
+BRE.AX       BRZLINRARE FPO [BRE]    6.97                                                           drawdown 74%
+WDS.AX         WOODSIDE FPO [WDS]    7.00                                                       Z'' 2.23 (AMBER)
+SDR.AX       SITEMINDER FPO [SDR]    7.15                     drawdown 51%; one-off items 0m (ratios normalised)
+DNL.AX       DYNO NOBEL FPO [DNL]    7.18                                                       Z'' 2.53 (AMBER)
+GOZ.AX    GROWTHPRO STAPLED [GOZ]    7.22                                                    gearing 44% (AMBER)
+SHL.AX       SONIC HLTH FPO [SHL]    7.26                                                       Z'' 2.18 (AMBER)
+DBI.AX    DALRYMPLE STAPLED [DBI]    7.34                                                    gearing 60% (AMBER)
+PMV.AX        PREM INV. FPO [PMV]    7.51                                 earnings falling: EBITDA 57% of 3y avg
+LYC.AX            LYNAS FPO [LYC]    7.56                                                           drawdown 44%
+EVT.AX           EVTLTD FPO [EVT]    7.60                                                         Z'' 1.09 (RED)
+RFF.AX   RURALFUNDS STAPLED [RFF]    7.60                                                    gearing 42% (AMBER)
+RRL.AX            REGIS FPO [RRL]    7.63                                                           drawdown 41%
+DYL.AX         D YELLOW FPO [DYL]    7.65                                                           drawdown 78%
+MI6.AX       MINERAL260 FPO [MI6]    7.66                      funding risk (cash covers debt): runway 18 months
+CAT.AX         CATAPULT FPO [CAT]    7.68   drawdown 50%; one-offs suspected but not adjustable (signals merged)
+GWA.AX        GWA GROUP FPO [GWA]    7.70                                                       Z'' 2.41 (AMBER)
+STO.AX           SANTOS FPO [STO]    7.73                                                       Z'' 1.65 (AMBER)
+CHN.AX          CHALICE FPO [CHN]    7.83        funding risk (cash covers debt): runway 19 months; drawdown 66%
+IRE.AX            IRESS FPO [IRE]    7.86                                                           drawdown 42%
+FMG.AX        FORTESCUE FPO [FMG]    7.94                                                           drawdown 42%
+ELS.AX          ELSIGHT FPO [ELS]    8.01                                                           drawdown 84%
+ORI.AX            ORICA FPO [ORI]    8.07                                                       Z'' 1.52 (AMBER)
+AYA.AX           ARTRYA FPO [AYA]    8.10        funding risk (cash covers debt): runway 17 months; drawdown 60%
+SLX.AX            SILEX FPO [SLX]    8.13                                                           drawdown 75%
+WBT.AX       WEEBITNANO FPO [WBT]    8.17                                                           drawdown 75%
+ABB.AX       AUSSIEBAND FPO [ABB]    8.25                                                       Z'' 2.17 (AMBER)
+LIN.AX          LINDIAN FPO [LIN]    8.26                                                           drawdown 67%
+SRG.AX        SRGGLOBAL FPO [SRG]    8.32                                                       Z'' 1.82 (AMBER)
+SCG.AX      SCENTRE STAPLED [SCG]    8.34                                                    gearing 42% (AMBER)
+HDN.AX HOMECO DNR ORD UNITS [HDN]    8.47                                                    gearing 36% (AMBER)
+SPK.AX     SPARK NZ FPO NZX [SPK]    8.54                                                       Z'' 2.35 (AMBER)
+SRL.AX          SUNRISE FPO [SRL]    8.61                                                           drawdown 62%
+GGP.AX        GREATLAND FPO [GGP]    8.81                                                           drawdown 44%
+DOW.AX       DOWNER EDI FPO [DOW]    8.90                                                         Z'' 0.93 (RED)
+ALQ.AX              ALS FPO [ALQ]    8.98                                                       Z'' 2.32 (AMBER)
+TPG.AX       TPGLIMITED FPO [TPG]    9.07                                                        Z'' -0.30 (RED)
+FFM.AX           FFMLTD FPO [FFM]    9.28                                                           drawdown 52%
+ARB.AX         ARB CORP FPO [ARB]    9.39                                                           drawdown 50%
+BGA.AX             BEGA FPO [BGA]   10.01                                                       Z'' 1.51 (AMBER)
+IGO.AX       IGOLIMITED FPO [IGO]   10.01                                                           drawdown 55%
+BNZ.AX   BENZMINING CDI 1:1 [BNZ]   10.13                      funding risk (cash covers debt): runway 24 months
+ARU.AX          ARAFURA FPO [ARU]   10.34                                                           drawdown 65%
+WA1.AX          WA1 RES FPO [WA1]   10.95                                                           drawdown 69%
+TCL.AX   TRANSURBAN STAPLED [TCL]   12.26                                                    gearing 59% (AMBER)
+SSM.AX        SRVSTREAM FPO [SSM]   12.28                                                       Z'' 2.20 (AMBER)
+SMI.AX       SANTANAMIN FPO [SMI]   12.44                                                           drawdown 61%
+TLC.AX          LOTTERY FPO [TLC]   12.81                                                        Z'' -0.48 (RED)
+REG.AX       REG HEALTH FPO [REG]   13.00                                                           drawdown 42%
+WES.AX        WESFARMER FPO [WES]   13.05                                                       Z'' 1.80 (AMBER)
+SX2.AX   SOUTHGOLD2 CDI 1:1 [SX2]   13.20                                                           drawdown 49%
+CUV.AX         CLINUVEL FPO [CUV]   13.23                                                           drawdown 46%
+TCG.AX       TURACOGOLD FPO [TCG]   13.72                      funding risk (cash covers debt): runway 23 months
+TLS.AX          TELSTRA FPO [TLS]   14.08                                                         Z'' 1.07 (RED)
+PYC.AX       PYC THERAP FPO [PYC]   14.68         funding risk (cash covers debt): runway 8 months; drawdown 43%
+CU6.AX       CLARITY PH FPO [CU6] no debt         funding risk (cash covers debt): runway 6 months; drawdown 55%
+EIQ.AX        ECHOIQLTD FPO [EIQ] no debt         funding risk (cash covers debt): runway 5 months; drawdown 81%
 
 === Data quality checks (verify against annual reports) ===
 ticker                                                                                                                                                    data_issues
@@ -427,147 +432,148 @@ LLC.AX                                                                          
 SGR.AX                                                                             Yahoo EBIT -195m includes 157m of non-operating items; used operating income -352m
 AEL.AX                                                                                Yahoo EBIT -16m includes 10m of non-operating items; used operating income -25m
 NEC.AX                                                                              Yahoo EBIT -459m includes 78m of non-operating items; used operating income -537m
-PDN.AX                                                               converted from USD; Yahoo EBIT 26m includes 5m of non-operating items; used operating income 21m
+PDN.AX                                                               converted from USD; Yahoo EBIT 27m includes 5m of non-operating items; used operating income 21m
 TLX.AX                                                              converted from USD; Yahoo EBIT 53m includes 26m of non-operating items; used operating income 27m
-MSB.AX                                                            converted from USD; Yahoo EBIT -55m includes 21m of non-operating items; used operating income -77m
+MSB.AX                                                            converted from USD; Yahoo EBIT -56m includes 21m of non-operating items; used operating income -77m
 IMR.AX                                                                                                                                             converted from USD
 AXQ.AX                                                                                                                                             converted from USD
 NXT.AX                                                                               Yahoo EBIT 104m includes 141m of non-operating items; used operating income -36m
-ELV.AX                                                               converted from USD; Yahoo EBIT 77m includes 76m of non-operating items; used operating income 1m
-CIA.AX                                                                                                                                             converted from CAD
+ELV.AX                                                               converted from USD; Yahoo EBIT 78m includes 76m of non-operating items; used operating income 1m
 LTR.AX                                                                                 Yahoo EBIT 20m includes -30m of non-operating items; used operating income 50m
+CIA.AX                                                                                                                                             converted from CAD
 DGT.AX                                                                                                                                                 missing ebitda
 VGN.AX                                                                               Yahoo EBIT 837m includes 131m of non-operating items; used operating income 706m
-KAR.AX                                                            converted from USD; Yahoo EBIT 330m includes 77m of non-operating items; used operating income 254m
-VSL.AX                                                             converted from NZD; Yahoo EBIT 38m includes 68m of non-operating items; used operating income -29m
+KAR.AX                                                            converted from USD; Yahoo EBIT 332m includes 77m of non-operating items; used operating income 255m
 MIN.AX                                                                           Yahoo EBIT 2,107m includes 252m of non-operating items; used operating income 1,855m
 TPW.AX                                                                                                                                       missing interest_expense
-NIC.AX                                                            converted from USD; Yahoo EBIT 200m includes 26m of non-operating items; used operating income 174m
+NIC.AX                                                            converted from USD; Yahoo EBIT 201m includes 27m of non-operating items; used operating income 175m
+WEB.AX                                                                                 Yahoo EBIT 84m includes -13m of non-operating items; used operating income 97m
 VEA.AX                                                                             Yahoo EBIT -443m includes -689m of non-operating items; used operating income 245m
-CSC.AX                                                           converted from USD; Yahoo EBIT 897m includes 175m of non-operating items; used operating income 722m
-WTC.AX                                                            converted from USD; Yahoo EBIT 537m includes 68m of non-operating items; used operating income 469m
+CSC.AX                                                           converted from USD; Yahoo EBIT 901m includes 176m of non-operating items; used operating income 725m
+WTC.AX                                                            converted from USD; Yahoo EBIT 539m includes 69m of non-operating items; used operating income 471m
 ING.AX                                                                                Yahoo EBIT 110m includes 119m of non-operating items; used operating income -8m
 GNC.AX                                                                                Yahoo EBIT 64m includes 161m of non-operating items; used operating income -97m
 NUF.AX                                                                              Yahoo EBIT -83m includes 217m of non-operating items; used operating income -300m
-AAI.AX                                                       converted from USD; Yahoo EBIT 1,829m includes 695m of non-operating items; used operating income 1,135m
+AAI.AX                                                       converted from USD; Yahoo EBIT 1,837m includes 697m of non-operating items; used operating income 1,139m
+XRO.AX                                                           converted from NZD; Yahoo EBIT 348m includes 361m of non-operating items; used operating income -13m
 SHV.AX                                                                                  Yahoo EBIT 54m includes 11m of non-operating items; used operating income 43m
 RIC.AX                                                                               Yahoo EBIT 68m includes 229m of non-operating items; used operating income -161m
-XRO.AX                                                           converted from NZD; Yahoo EBIT 347m includes 360m of non-operating items; used operating income -13m
-PXA.AX                                                                                   Yahoo EBIT 60m includes 9m of non-operating items; used operating income 51m
 TWE.AX                                                                          Yahoo EBIT -1,172m includes -1,229m of non-operating items; used operating income 58m
+PXA.AX                                                                                   Yahoo EBIT 60m includes 9m of non-operating items; used operating income 51m
 MMS.AX                                                                                Yahoo EBIT 198m includes 129m of non-operating items; used operating income 68m
 EDV.AX                                                                              Yahoo EBIT 283m includes 495m of non-operating items; used operating income -212m
 CKF.AX                                                                                Yahoo EBIT 115m includes 123m of non-operating items; used operating income -8m
 CNU.AX                                                                                                                                             converted from NZD
 PMT.AX                                                             converted from CAD; Yahoo EBIT -7m includes 16m of non-operating items; used operating income -23m
-LNW.AX                                                      converted from USD; Yahoo EBIT 1,016m includes -334m of non-operating items; used operating income 1,350m
+LNW.AX                                                      converted from USD; Yahoo EBIT 1,021m includes -335m of non-operating items; used operating income 1,356m
 ASB.AX                                                                             Yahoo EBIT -112m includes 105m of non-operating items; used operating income -218m
-BGL.AX                                                                                 Yahoo EBIT 18m includes -15m of non-operating items; used operating income 34m
 360.AX                                                                                                                   missing interest_expense; converted from USD
+BGL.AX                                                                                 Yahoo EBIT 18m includes -15m of non-operating items; used operating income 34m
 OML.AX                                                                                Yahoo EBIT 46m includes -76m of non-operating items; used operating income 122m
 CXO.AX                                                                                Yahoo EBIT -25m includes 20m of non-operating items; used operating income -44m
-VUL.AX                                                          converted from EUR; Yahoo EBIT -109m includes 42m of non-operating items; used operating income -151m
-PLS.AX                                                                               Yahoo EBIT 879m includes 433m of non-operating items; used operating income 446m
+VUL.AX                                                          converted from EUR; Yahoo EBIT -110m includes 42m of non-operating items; used operating income -151m
+PRN.AX                                                                               Yahoo EBIT 241m includes -50m of non-operating items; used operating income 292m
 DMP.AX                                                                             Yahoo EBIT -120m includes -347m of non-operating items; used operating income 227m
+PLS.AX                                                                               Yahoo EBIT 879m includes 433m of non-operating items; used operating income 446m
 4DX.AX                                                                             Yahoo EBIT -203m includes -145m of non-operating items; used operating income -58m
 IDX.AX                                                                                 Yahoo EBIT 52m includes -16m of non-operating items; used operating income 68m
 ELD.AX                                                                                 Yahoo EBIT 134m includes 68m of non-operating items; used operating income 66m
-DRO.AX                                                                                  Yahoo EBIT 2m includes 17m of non-operating items; used operating income -15m
-NXG.AX                                                         converted from CAD; Yahoo EBIT -260m includes -166m of non-operating items; used operating income -94m
+NXG.AX                                                         converted from CAD; Yahoo EBIT -261m includes -167m of non-operating items; used operating income -94m
 SEK.AX                                                                             Yahoo EBIT -252m includes -558m of non-operating items; used operating income 306m
+DRO.AX                                                                                  Yahoo EBIT 2m includes 17m of non-operating items; used operating income -15m
 WOR.AX                                                                               Yahoo EBIT 541m includes 142m of non-operating items; used operating income 399m
 IPX.AX                                                                                                                                             converted from USD
 TUA.AX                                                              converted from SGD; Yahoo EBIT 39m includes 13m of non-operating items; used operating income 26m
-JHX.AX                                                        converted from USD; Yahoo EBIT 655m includes -426m of non-operating items; used operating income 1,082m
 ABG.AX                                                                                Yahoo EBIT -31m includes -92m of non-operating items; used operating income 61m
+JHX.AX                                                        converted from USD; Yahoo EBIT 658m includes -428m of non-operating items; used operating income 1,086m
 SUL.AX                                                                               Yahoo EBIT 286m includes 313m of non-operating items; used operating income -28m
 ACL.AX                                                                                 Yahoo EBIT 41m includes -20m of non-operating items; used operating income 61m
 TEA.AX                                                                                 Yahoo EBIT 113m includes 13m of non-operating items; used operating income 99m
 SGM.AX                                                                               Yahoo EBIT 419m includes 120m of non-operating items; used operating income 299m
 ALD.AX                                                                              Yahoo EBIT 393m includes -123m of non-operating items; used operating income 516m
-IFT.AX                                                           converted from NZD; Yahoo EBIT 506m includes 339m of non-operating items; used operating income 167m
+IFT.AX                                                           converted from NZD; Yahoo EBIT 507m includes 339m of non-operating items; used operating income 167m
 FBU.AX                                                            converted from NZD; Yahoo EBIT 245m includes 191m of non-operating items; used operating income 54m
-AMC.AX                                                      converted from USD; Yahoo EBIT 2,931m includes -358m of non-operating items; used operating income 3,289m
+AMC.AX                                                      converted from USD; Yahoo EBIT 2,943m includes -359m of non-operating items; used operating income 3,303m
 CWY.AX                                                                                Yahoo EBIT 283m includes 40m of non-operating items; used operating income 242m
 HVN.AX                                                                               Yahoo EBIT 847m includes 422m of non-operating items; used operating income 425m
-PDI.AX                                                          converted from USD; Yahoo EBIT -64m includes 355m of non-operating items; used operating income -419m
-WDS.AX                                                                                                                                             converted from USD
+PDI.AX                                                          converted from USD; Yahoo EBIT -65m includes 357m of non-operating items; used operating income -421m
 A4N.AX                                                                                 Yahoo EBIT -43m includes 6m of non-operating items; used operating income -49m
-GOZ.AX                                                                               Yahoo EBIT 187m includes -32m of non-operating items; used operating income 219m
+WDS.AX                                                                                                                                             converted from USD
 DNL.AX                                                                                Yahoo EBIT 377m includes 73m of non-operating items; used operating income 304m
+GOZ.AX                                                                               Yahoo EBIT 187m includes -32m of non-operating items; used operating income 219m
 DBI.AX                                                                                Yahoo EBIT 255m includes 190m of non-operating items; used operating income 65m
 PMV.AX                                                                                Yahoo EBIT 190m includes 32m of non-operating items; used operating income 158m
 EVT.AX                                                                                 Yahoo EBIT 129m includes 36m of non-operating items; used operating income 93m
-CAT.AX                                                                                                                                             converted from USD
 RFF.AX                                                                                 Yahoo EBIT 146m includes 94m of non-operating items; used operating income 52m
-GWA.AX                                                                                  Yahoo EBIT 76m includes 14m of non-operating items; used operating income 62m
-IRE.AX                                                                                 Yahoo EBIT 116m includes 28m of non-operating items; used operating income 88m
-STO.AX                                                       converted from USD; Yahoo EBIT 2,259m includes 493m of non-operating items; used operating income 1,766m
 DYL.AX                                                                                                                                       missing interest_expense
-FMG.AX                                                    converted from USD; Yahoo EBIT 6,597m includes -1,088m of non-operating items; used operating income 7,686m
+CAT.AX                                                                                                                                             converted from USD
+GWA.AX                                                                                  Yahoo EBIT 76m includes 14m of non-operating items; used operating income 62m
+STO.AX                                                       converted from USD; Yahoo EBIT 2,268m includes 495m of non-operating items; used operating income 1,774m
+IRE.AX                                                                                 Yahoo EBIT 116m includes 28m of non-operating items; used operating income 88m
+FMG.AX                                                    converted from USD; Yahoo EBIT 6,625m includes -1,093m of non-operating items; used operating income 7,717m
 ELS.AX                                                                                                                                             converted from USD
 SLX.AX                                                                                Yahoo EBIT -39m includes -34m of non-operating items; used operating income -5m
 ABB.AX                                                                                 Yahoo EBIT 72m includes -17m of non-operating items; used operating income 89m
-SCG.AX                                                                           Yahoo EBIT 2,451m includes 648m of non-operating items; used operating income 1,803m
 LIN.AX                                                                               Yahoo EBIT -32m includes -14m of non-operating items; used operating income -18m
+SCG.AX                                                                           Yahoo EBIT 2,451m includes 648m of non-operating items; used operating income 1,803m
 HDN.AX                                                                               Yahoo EBIT 452m includes 196m of non-operating items; used operating income 256m
-SPK.AX                                                           converted from NZD; Yahoo EBIT 547m includes 203m of non-operating items; used operating income 343m
+SPK.AX                                                           converted from NZD; Yahoo EBIT 548m includes 204m of non-operating items; used operating income 344m
 TPG.AX                                                                               Yahoo EBIT 50m includes -349m of non-operating items; used operating income 399m
 BGA.AX                                                                                  Yahoo EBIT 98m includes 84m of non-operating items; used operating income 14m
 IGO.AX                                                                              Yahoo EBIT 149m includes 273m of non-operating items; used operating income -125m
 BNZ.AX                                                                                                                                             converted from CAD
 ARU.AX                                                                                Yahoo EBIT -41m includes 16m of non-operating items; used operating income -58m
+TCL.AX                                                                           Yahoo EBIT 1,347m includes 177m of non-operating items; used operating income 1,170m
 SSM.AX                                                                                  Yahoo EBIT 80m includes 14m of non-operating items; used operating income 66m
 SMI.AX                                                                                   Yahoo EBIT -1m includes 5m of non-operating items; used operating income -7m
-TCL.AX                                                                           Yahoo EBIT 1,347m includes 177m of non-operating items; used operating income 1,170m
+REG.AX                                                                                Yahoo EBIT 247m includes 189m of non-operating items; used operating income 58m
 SX2.AX                                                                                                                                             converted from CAD
 TCG.AX                                                                                 Yahoo EBIT -27m includes 8m of non-operating items; used operating income -35m
 TLS.AX                                                                           Yahoo EBIT 3,918m includes 531m of non-operating items; used operating income 3,387m
 PYC.AX                                                                                Yahoo EBIT -44m includes 39m of non-operating items; used operating income -83m
 CU6.AX                                                                                                       missing interest_expense; no debt split, used total debt
 EIQ.AX                                                                                                       missing interest_expense; no debt split, used total debt
-WEB.AX                                                                                 Yahoo EBIT 84m includes -13m of non-operating items; used operating income 97m
+VSL.AX                                                             converted from NZD; Yahoo EBIT 39m includes 68m of non-operating items; used operating income -29m
 ILU.AX                                                                             Yahoo EBIT -408m includes -560m of non-operating items; used operating income 152m
-RSG.AX                                                           converted from USD; Yahoo EBIT 370m includes -92m of non-operating items; used operating income 462m
-SMR.AX                                                          converted from USD; Yahoo EBIT -37m includes -332m of non-operating items; used operating income 295m
+RSG.AX                                                           converted from USD; Yahoo EBIT 372m includes -92m of non-operating items; used operating income 464m
+SMR.AX                                                          converted from USD; Yahoo EBIT -37m includes -334m of non-operating items; used operating income 296m
 LIC.AX                                                                                  Yahoo EBIT 77m includes 82m of non-operating items; used operating income -5m
-PRN.AX                                                                               Yahoo EBIT 241m includes -50m of non-operating items; used operating income 292m
 ORA.AX                                                                              Yahoo EBIT -538m includes -602m of non-operating items; used operating income 63m
 WHC.AX                                                                            Yahoo EBIT 780m includes -355m of non-operating items; used operating income 1,135m
 FLT.AX                                                                                Yahoo EBIT 277m includes 75m of non-operating items; used operating income 201m
+MP1.AX                                                                               Yahoo EBIT -51m includes -19m of non-operating items; used operating income -32m
 INA.AX                                                                                Yahoo EBIT 237m includes 87m of non-operating items; used operating income 150m
 ARF.AX                                                                                Yahoo EBIT 148m includes 47m of non-operating items; used operating income 101m
-MP1.AX                                                                               Yahoo EBIT -51m includes -19m of non-operating items; used operating income -32m
 QAN.AX                                                                           Yahoo EBIT 2,126m includes 326m of non-operating items; used operating income 1,800m
-CMW.AX                                                                                 Yahoo EBIT 179m includes 87m of non-operating items; used operating income 92m
 IMD.AX                                                                                 Yahoo EBIT 113m includes 47m of non-operating items; used operating income 66m
-S32.AX                                                     converted from USD; Yahoo EBIT 2,362m includes 1,034m of non-operating items; used operating income 1,328m
+CMW.AX                                                                                 Yahoo EBIT 179m includes 87m of non-operating items; used operating income 92m
 BPT.AX                                                                                Yahoo EBIT 462m includes 60m of non-operating items; used operating income 402m
+S32.AX                                                     converted from USD; Yahoo EBIT 2,372m includes 1,039m of non-operating items; used operating income 1,333m
 SKG.AX                                                                                Yahoo EBIT 192m includes 77m of non-operating items; used operating income 115m
 SGP.AX                                                                             Yahoo EBIT 1,145m includes 418m of non-operating items; used operating income 727m
 WGX.AX                                                                              Yahoo EBIT 670m includes -199m of non-operating items; used operating income 868m
-CQE.AX                                                                                 Yahoo EBIT 135m includes 58m of non-operating items; used operating income 77m
-RWC.AX                                                            converted from USD; Yahoo EBIT 83m includes -40m of non-operating items; used operating income 123m
 UNI.AX                                                                                 Yahoo EBIT 35m includes -28m of non-operating items; used operating income 64m
+CQE.AX                                                                                 Yahoo EBIT 135m includes 58m of non-operating items; used operating income 77m
+RWC.AX                                                            converted from USD; Yahoo EBIT 84m includes -40m of non-operating items; used operating income 123m
 REH.AX                                                                               Yahoo EBIT 483m includes 322m of non-operating items; used operating income 161m
-CSL.AX                                                  converted from USD; Yahoo EBIT -5,546m includes -10,189m of non-operating items; used operating income 4,642m
 APZ.AX                                                                                 Yahoo EBIT 103m includes 55m of non-operating items; used operating income 48m
+CSL.AX                                                  converted from USD; Yahoo EBIT -5,569m includes -10,231m of non-operating items; used operating income 4,661m
 NEM.AX                                                                                                                                             converted from USD
 SXE.AX                                                                                 Yahoo EBIT 19m includes -44m of non-operating items; used operating income 63m
+DXS.AX                                                                               Yahoo EBIT 708m includes 486m of non-operating items; used operating income 223m
 GLF.AX                                                                                 Yahoo EBIT 74m includes -13m of non-operating items; used operating income 87m
 SBM.AX                                                                                 Yahoo EBIT -27m includes 8m of non-operating items; used operating income -36m
-DXS.AX                                                                               Yahoo EBIT 708m includes 486m of non-operating items; used operating income 223m
 MGR.AX                                                                               Yahoo EBIT 914m includes 456m of non-operating items; used operating income 458m
 BHP.AX                                                                                                                                             converted from USD
-BSL.AX                                                                             Yahoo EBIT 1,186m includes 240m of non-operating items; used operating income 946m
-BXB.AX                                                       converted from USD; Yahoo EBIT 2,159m includes 368m of non-operating items; used operating income 1,791m
+BXB.AX                                                       converted from USD; Yahoo EBIT 2,167m includes 369m of non-operating items; used operating income 1,798m
 RMS.AX                                                                               Yahoo EBIT 240m includes 132m of non-operating items; used operating income 108m
-GPT.AX                                                                             Yahoo EBIT 1,235m includes 591m of non-operating items; used operating income 644m
+BSL.AX                                                                             Yahoo EBIT 1,186m includes 240m of non-operating items; used operating income 946m
 BOE.AX                                                                                  Yahoo EBIT 6m includes -15m of non-operating items; used operating income 21m
+GPT.AX                                                                             Yahoo EBIT 1,235m includes 591m of non-operating items; used operating income 644m
 RIO.AX                                                                  converted from USD; share count adjusted from 372m to 1,626m to match market cap (CDI ratio?)
 CQR.AX                                                                                Yahoo EBIT 467m includes 369m of non-operating items; used operating income 98m
-JBH.AX                                                                               Yahoo EBIT 703m includes 247m of non-operating items; used operating income 456m
 NWS.AX                                                                    converted from USD; share count adjusted from 179m to 537m to match market cap (CDI ratio?)
+JBH.AX                                                                               Yahoo EBIT 703m includes 247m of non-operating items; used operating income 456m
 ALX.AX                                                                               Yahoo EBIT 287m includes 311m of non-operating items; used operating income -23m
 MLX.AX                                                                                Yahoo EBIT 139m includes 17m of non-operating items; used operating income 122m
 VCX.AX                                                                             Yahoo EBIT 1,588m includes 816m of non-operating items; used operating income 771m
@@ -580,35 +586,37 @@ YAL.AX                                                                          
 CLW.AX                                                                               Yahoo EBIT 358m includes 239m of non-operating items; used operating income 120m
 ORG.AX                                                                           Yahoo EBIT 1,824m includes 499m of non-operating items; used operating income 1,325m
 CDA.AX                                                                                Yahoo EBIT 240m includes 43m of non-operating items; used operating income 197m
-ANN.AX                                                           converted from USD; Yahoo EBIT 478m includes 118m of non-operating items; used operating income 360m
 RDX.AX                                                                                Yahoo EBIT 132m includes 23m of non-operating items; used operating income 110m
+ANN.AX                                                           converted from USD; Yahoo EBIT 480m includes 118m of non-operating items; used operating income 362m
 MND.AX                                                                                Yahoo EBIT 182m includes 80m of non-operating items; used operating income 102m
-WPR.AX                                                                                Yahoo EBIT 249m includes 97m of non-operating items; used operating income 152m
 SFR.AX                                                                                                                                             converted from USD
+WPR.AX                                                                                Yahoo EBIT 249m includes 97m of non-operating items; used operating income 152m
 RGN.AX                                                                               Yahoo EBIT 340m includes 119m of non-operating items; used operating income 221m
 DPM.AX                                                                                                                                             converted from USD
 CHC.AX                                                                               Yahoo EBIT 515m includes 348m of non-operating items; used operating income 167m
 DTL.AX                                                                                   Yahoo EBIT 79m includes 9m of non-operating items; used operating income 70m
 DXI.AX                                                                                  Yahoo EBIT 91m includes 41m of non-operating items; used operating income 50m
-REG.AX                                                                                Yahoo EBIT 247m includes 189m of non-operating items; used operating income 58m
 ALL.AX                                                                           Yahoo EBIT 1,982m includes 600m of non-operating items; used operating income 1,382m
 RMD.AX                                                                                                                                             converted from USD
-A2M.AX                                                            converted from NZD; Yahoo EBIT 244m includes 41m of non-operating items; used operating income 203m
+A2M.AX                                                            converted from NZD; Yahoo EBIT 245m includes 41m of non-operating items; used operating income 203m
 BWP.AX                                                                               Yahoo EBIT 452m includes 270m of non-operating items; used operating income 181m
 SIG.AX                                                                             Yahoo EBIT 1,051m includes 144m of non-operating items; used operating income 907m
-AIA.AX                                                            converted from NZD; Yahoo EBIT 431m includes 86m of non-operating items; used operating income 345m
+AIA.AX                                                            converted from NZD; Yahoo EBIT 432m includes 86m of non-operating items; used operating income 346m
 PME.AX                                                                                                                                       missing interest_expense
 PRU.AX                                                                                                                                             converted from USD
-FPH.AX                                                           converted from NZD; Yahoo EBIT 529m includes 135m of non-operating items; used operating income 394m
+FPH.AX                                                           converted from NZD; Yahoo EBIT 530m includes 135m of non-operating items; used operating income 394m
 NEU.AX                                                                                                       missing interest_expense; no debt split, used total debt
 
 === Changes since last run ===
 ticker                 name status_prev status  distance_to_default_prev  distance_to_default  dd_change
-DVP.AX    DEVELOP FPO [DVP]       AMBER  WATCH                      4.05                 3.89      -0.16
-DNL.AX DYNO NOBEL FPO [DNL]       GREEN  WATCH                      6.57                 7.27       0.70
-GGP.AX  GREATLAND FPO [GGP]       GREEN  WATCH                      9.05                 8.89      -0.16
-HSN.AX HANSEN TEC FPO [HSN]       WATCH  GREEN                      6.48                 6.51       0.03
-REG.AX REG HEALTH FPO [REG]       WATCH  GREEN                     13.04                13.09       0.04
+WEB.AX    WEBBEDS FPO [WEB]       GREEN  AMBER                      3.57                 3.49      -0.08
+DVP.AX    DEVELOP FPO [DVP]       WATCH  AMBER                      3.89                 3.76      -0.13
+PRN.AX    PERENTI FPO [PRN]       GREEN  WATCH                      4.89                 4.46      -0.42
+EVN.AX  EVOLUTION FPO [EVN]       GREEN  WATCH                      6.25                 6.15      -0.10
+HSN.AX HANSEN TEC FPO [HSN]       GREEN  WATCH                      6.51                 6.44      -0.07
+RRL.AX      REGIS FPO [RRL]       GREEN  WATCH                      7.72                 7.63      -0.09
+REG.AX REG HEALTH FPO [REG]       GREEN  WATCH                     13.09                13.00      -0.09
+VSL.AX   VULCAN S FPO [VSL]       AMBER  GREEN                      3.39                 3.50       0.12
 
 Excluded at run time as financials: CPU.AX, SOL.AX
 
